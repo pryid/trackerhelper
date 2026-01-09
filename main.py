@@ -1,32 +1,51 @@
 #!/usr/bin/env python3
+"""
+Скрипт для подсчёта общей длительности аудио по папкам-релизам и генерации BBCode-шаблона раздачи.
+
+Основная идея:
+- Каждый релиз — это папка, в которой лежат аудиофайлы.
+- Скрипт суммирует длительность треков в каждой папке (через ffprobe),
+  считает количество треков, собирает sample rate / bit depth / расширения.
+- Опционально генерирует BBCode-шаблон раздачи (структура BBCode должна оставаться неизменной).
+
+Примечание:
+- Опция --test оставлена для проверки форматирования вывода без доступа к файловой системе/ffprobe,
+  но тестовые данные вынесены в отдельный файл synthetic_dataset.py.
+"""
+
 import argparse
-import os
-import sys
 import json
+import os
 import re
 import subprocess
+import sys
 from pathlib import Path
+from typing import Iterable
 
+import shutil
+
+# Поддерживаемые расширения аудиофайлов по умолчанию
 AUDIO_EXTS_DEFAULT = {
     ".flac", ".mp3", ".m4a", ".aac", ".ogg", ".opus", ".wav", ".wma", ".aiff", ".aif", ".alac"
 }
 
+# Порядок групп для красивого вывода/BBCode
 PREFERRED_GROUP_ORDER = ["Albums", "Singles"]
 GROUP_TITLES_RU = {
     "Albums": "Альбомы",
     "Singles": "Синглы",
 }
 
-# ---------- utils ----------
+# ----------------------------
+# Утилиты форматирования/лейблы
+# ----------------------------
 
 def which(cmd: str) -> str | None:
-    for p in os.environ.get("PATH", "").split(os.pathsep):
-        cand = Path(p) / cmd
-        if cand.exists() and os.access(cand, os.X_OK):
-            return str(cand)
-    return None
+    """Возвращает путь к исполняемому файлу в PATH или None."""
+    return shutil.which(cmd)
 
 def format_hhmmss(total_seconds: float) -> str:
+    """Форматирует секунды в HH:MM:SS."""
     s = int(round(total_seconds))
     h = s // 3600
     s %= 3600
@@ -35,6 +54,7 @@ def format_hhmmss(total_seconds: float) -> str:
     return f"{h:02d}:{m:02d}:{s:02d}"
 
 def format_khz(sr_hz: int) -> str:
+    """Sample rate в kHz (как в оригинальной логике)."""
     if sr_hz % 1000 == 0:
         return f"{sr_hz // 1000}"
     return f"{sr_hz / 1000:.1f}".rstrip("0").rstrip(".")
@@ -68,16 +88,26 @@ def codec_label(exts: set[str]) -> str:
         return f"mixed ({joined})"
     return "unknown"
 
+# ----------------------------
+# Группировка/сортировка релизов
+# ----------------------------
+
 def group_key(rel_folder: Path) -> str:
+    """Группа = первый сегмент относительного пути (Albums/Singles/и т.п.)."""
     parts = rel_folder.parts
     return parts[0] if parts else "."
 
 def group_sort_index(g: str) -> tuple[int, str]:
+    """Сортировка групп: сначала PREFERRED_GROUP_ORDER, потом по алфавиту."""
     if g in PREFERRED_GROUP_ORDER:
         return (PREFERRED_GROUP_ORDER.index(g), "")
     return (len(PREFERRED_GROUP_ORDER), g.lower())
 
 def parse_release_title_and_year(folder_name: str) -> tuple[str, int | None]:
+    """
+    Пытается распарсить "Title - 2020" или "Title – 2020".
+    Возвращает (title, year|None).
+    """
     m = re.match(r"^(.*?)(?:\s*[-–]\s*)(\d{4})\s*$", folder_name)
     if not m:
         return folder_name, None
@@ -89,11 +119,20 @@ def parse_release_title_and_year(folder_name: str) -> tuple[str, int | None]:
     return (title if title else folder_name, year)
 
 def extract_years_from_text(s: str) -> list[int]:
+    """Находим годы в любом тексте (используется для year_range по структуре папок)."""
     return [int(y) for y in re.findall(r"\b(19\d{2}|20\d{2})\b", s)]
+
+# ----------------------------
+# Работа с ffprobe
+# ----------------------------
 
 def ffprobe_info(file_path: Path) -> tuple[float | None, int | None, int | None]:
     """
-    Returns (duration_seconds, sample_rate_hz, bit_depth)
+    Возвращает (duration_seconds, sample_rate_hz, bit_depth).
+
+    Важно:
+    - duration берём из format.duration
+    - sr/bit берём из первого audio-stream
     """
     try:
         proc = subprocess.run(
@@ -146,13 +185,26 @@ def ffprobe_info(file_path: Path) -> tuple[float | None, int | None, int | None]
     except Exception:
         return (None, None, None)
 
+# ----------------------------
+# Треклист
+# ----------------------------
+
+_TRACK_NUM_RE = re.compile(r"^\s*(\d{1,3})\s*([.\-_\s]+)\s*(.*)$")
+
 def build_tracklist_lines(audio_files: list[Path]) -> list[str]:
+    """
+    Делает треклист по именам файлов.
+
+    Логика оставлена прежней:
+    - Если имя начинается с номера, используем его.
+    - Иначе нумеруем автоматически с 01.
+    """
     lines: list[str] = []
     auto_n = 1
 
     for f in sorted(audio_files):
         stem = f.stem
-        m = re.match(r"^\s*(\d{1,3})\s*([.\-_\s]+)\s*(.*)$", stem)
+        m = _TRACK_NUM_RE.match(stem)
         if m:
             num = m.group(1)
             title = m.group(3).strip() or stem
@@ -168,9 +220,12 @@ def build_tracklist_lines(audio_files: list[Path]) -> list[str]:
 
     return lines
 
-# ---------- DR helpers ----------
+# ----------------------------
+# DR helpers (поиск и чтение отчётов)
+# ----------------------------
 
 def normalize_name(s: str) -> str:
+    """Нормализация для сопоставления названий релизов с DR-файлами."""
     s = s.strip().lower()
     s = s.replace("ё", "е")
     s = s.replace("–", "-").replace("—", "-")
@@ -178,12 +233,17 @@ def normalize_name(s: str) -> str:
     return s
 
 def strip_dr_suffix(stem: str) -> str:
+    """Убирает суффиксы вида _dr, -dr, (dr) и т.п. из имени файла (без расширения)."""
     s = stem
     s = re.sub(r"[\s._-]*(dr|d\.r\.)\s*$", "", s, flags=re.IGNORECASE)
     s = re.sub(r"\s*\(dr\)\s*$", "", s, flags=re.IGNORECASE)
     return s.strip()
 
 def read_text_guess(path: Path) -> str:
+    """
+    Пытаемся прочитать текст в распространённых кодировках.
+    Полезно для отчётов DR, которые иногда бывают в cp1251.
+    """
     for enc in ("utf-8-sig", "utf-8", "cp1251", "latin-1"):
         try:
             return path.read_text(encoding=enc)
@@ -194,6 +254,10 @@ def read_text_guess(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 def build_dr_index(dr_dir: Path) -> dict[str, Path]:
+    """
+    Индекс: normalized_release_name -> путь к txt.
+    Нужен как fallback, если файл не совпал по точному имени.
+    """
     idx: dict[str, Path] = {}
     if not dr_dir.exists() or not dr_dir.is_dir():
         return idx
@@ -207,6 +271,12 @@ def build_dr_index(dr_dir: Path) -> dict[str, Path]:
     return idx
 
 def find_dr_text_for_release(folder_name: str, dr_dir: Path, dr_index: dict[str, Path]) -> str | None:
+    """
+    Поиск DR-отчёта для папки релиза.
+
+    Сначала пробуем "как в оригинале" через несколько шаблонов,
+    затем — через индекс normalize_name.
+    """
     candidates = [
         dr_dir / f"{folder_name}_dr.txt",
         dr_dir / f"{folder_name}-dr.txt",
@@ -225,7 +295,9 @@ def find_dr_text_for_release(folder_name: str, dr_dir: Path, dr_index: dict[str,
 
     return None
 
-# ---------- release bbcode ----------
+# ----------------------------
+# BBCode генерация
+# ----------------------------
 
 def make_release_bbcode(
     root_name: str,
@@ -242,10 +314,12 @@ def make_release_bbcode(
     parts.append(f"[size=24]{root_name}{yr}[/size]\n\n")
     parts.append("[img=right]ROOT_COVER_URL[/img]\n\n")
     parts.append("[b]Жанр[/b]: GENRE\n")
-    parts.append("[b]Носитель[/b]: WEB SOURCE\n")
+    parts.append("[b]Носитель[/b]: WEB [url=https://service.com/123]Service[/url]\n")
+    parts.append("[b]Издатель (лейбл)[/b]: ЛЕЙБЛ\n")
     parts.append(f"[b]Год издания[/b]: {year_range or 'YEAR'}\n")
     parts.append(f"[b]Аудиокодек[/b]: {overall_codec}\n")
     parts.append("[b]Тип рипа[/b]: tracks\n")
+    parts.append("[b]Источник[/b]: WEB\n")
     parts.append(f"[b]Продолжительность[/b]: {total_duration}\n")
 
     for group in sorted(grouped_releases.keys(), key=group_sort_index):
@@ -259,6 +333,8 @@ def make_release_bbcode(
 
             parts.append(f'[spoiler="{spoiler_title}"]\n')
             parts.append("[align=center]")
+            parts.append("[img]COVER_URL[/img]\n")
+            parts.append("[b]Носитель[/b]: WEB [url=https://service.com/123]Service[/url]\n")
             parts.append(f"Продолжительность: {rel['duration']}\n")
             parts.append('[spoiler="Треклист"]\n')
             parts.extend(line + "\n" for line in rel["tracklist"])
@@ -266,7 +342,9 @@ def make_release_bbcode(
             parts.append("[/align]\n\n")
 
             parts.append('[spoiler="Динамический отчет (DR)"]\n')
+            parts.append("[pre]\n")
             parts.append(((rel.get("dr") or "info").rstrip("\n")) + "\n")
+            parts.append("[/pre]\n")
             parts.append("[/spoiler]\n")
             parts.append("[/spoiler]\n\n")
 
@@ -278,48 +356,56 @@ def make_release_bbcode(
 
     return "".join(parts)
 
-# ---------- main ----------
+# ----------------------------
+# Сбор данных
+# ----------------------------
 
-def main() -> int:
-    ap = argparse.ArgumentParser(
-        description="Sum durations grouped per release folder; show bit depth + sample rate; optionally generate BBCode release template."
-    )
-    ap.add_argument("path", nargs="?", default=".", help="Root folder (default: current directory).")
-    ap.add_argument("--ext", action="append", default=[], help="Add extension (e.g. --ext .flac). Repeatable.")
-    ap.add_argument("--include-root", action="store_true", help="Include tracks directly inside the root folder.")
-    ap.add_argument("--flat", action="store_true", help="Flat output without group headers (Albums/Singles).")
-    ap.add_argument("--release", action="store_true", help="Write BBCode release template to /tmp/<root_folder_name>.")
-    ap.add_argument("--dr", default=None, help="Directory with DR reports (e.g. *_dr.txt). Use with --release.")
-    args = ap.parse_args()
+def iter_release_audio_files(root: Path, exts: set[str], include_root: bool) -> Iterable[tuple[Path, list[Path]]]:
+    """
+    Итерируемся по папкам и отдаём список аудиофайлов внутри папки.
 
-    root = Path(args.path).expanduser().resolve()
-    if not root.exists() or not root.is_dir():
-        print(f"Error: '{root}' is not a directory.", file=sys.stderr)
-        return 2
+    Важно:
+    - В --release треклист строится по списку найденных файлов в папке (даже если ffprobe
+      не смог прочитать длительность у какого-то файла — как в оригинале).
+    """
+    for dirpath, _, filenames in os.walk(root):
+        folder = Path(dirpath)
+        if folder == root and not include_root:
+            continue
 
-    if which("ffprobe") is None:
-        print("Error: ffprobe not found. Install ffmpeg (ffprobe) and retry.", file=sys.stderr)
-        return 3
+        audio_files: list[Path] = []
+        for fn in filenames:
+            p = folder / fn
+            if p.is_file() and p.suffix.lower() in exts:
+                audio_files.append(p)
 
-    exts = set(AUDIO_EXTS_DEFAULT)
-    for e in args.ext:
-        e = e.strip().lower()
-        if e and not e.startswith("."):
-            e = "." + e
-        if e:
-            exts.add(e)
+        if audio_files:
+            yield folder, sorted(audio_files)
 
-    dr_dir: Path | None = None
-    dr_index: dict[str, Path] = {}
-    if args.dr is not None:
-        dr_dir = Path(args.dr).expanduser().resolve()
-        if not dr_dir.exists() or not dr_dir.is_dir():
-            print(f"Warning: --dr path is not a directory: {dr_dir}", file=sys.stderr)
-            dr_dir = None
-        else:
-            dr_index = build_dr_index(dr_dir)
+def collect_real_stats(
+    root: Path,
+    exts: set[str],
+    include_root: bool,
+) -> tuple[
+    dict[Path, float],
+    dict[Path, int],
+    dict[Path, set[int]],
+    dict[Path, set[int]],
+    dict[Path, set[str]],
+    dict[Path, list[Path]],
+    float,
+    int,
+    set[int],
+    set[int],
+    set[str],
+    list[int],
+]:
+    """
+    Собирает статистику с реальной ФС + ffprobe.
 
-    # per-release(folder) stats
+    Возвращаем те же структуры, что и в исходном коде, чтобы снизить риск
+    "случайно поменять логику".
+    """
     per_dir_seconds: dict[Path, float] = {}
     per_dir_count: dict[Path, int] = {}
     per_dir_sr: dict[Path, set[int]] = {}
@@ -334,27 +420,14 @@ def main() -> int:
     total_exts: set[str] = set()
     all_years: list[int] = []
 
-    for dirpath, _, filenames in os.walk(root):
-        d = Path(dirpath)
-        if d == root and not args.include_root:
-            continue
-
-        audio_files: list[Path] = []
-        for fn in filenames:
-            p = d / fn
-            if p.is_file() and p.suffix.lower() in exts:
-                audio_files.append(p)
-
-        if not audio_files:
-            continue
-
+    for folder, audio_files in iter_release_audio_files(root, exts, include_root):
         folder_sum = 0.0
         folder_tracks = 0
         sr_set: set[int] = set()
         bit_set: set[int] = set()
         ext_set: set[str] = set()
 
-        for f in sorted(audio_files):
+        for f in audio_files:
             dur, sr, bit = ffprobe_info(f)
             if dur is None:
                 print(f"Warning: can't read duration: {f}", file=sys.stderr)
@@ -374,18 +447,208 @@ def main() -> int:
             total_exts.add(f.suffix.lower())
 
         if folder_tracks > 0:
-            per_dir_seconds[d] = per_dir_seconds.get(d, 0.0) + folder_sum
-            per_dir_count[d] = per_dir_count.get(d, 0) + folder_tracks
-            per_dir_sr.setdefault(d, set()).update(sr_set)
-            per_dir_bit.setdefault(d, set()).update(bit_set)
-            per_dir_exts.setdefault(d, set()).update(ext_set)
-            per_dir_files[d] = sorted(audio_files)
+            per_dir_seconds[folder] = per_dir_seconds.get(folder, 0.0) + folder_sum
+            per_dir_count[folder] = per_dir_count.get(folder, 0) + folder_tracks
+            per_dir_sr.setdefault(folder, set()).update(sr_set)
+            per_dir_bit.setdefault(folder, set()).update(bit_set)
+            per_dir_exts.setdefault(folder, set()).update(ext_set)
+            per_dir_files[folder] = audio_files  # список всех найденных файлов
 
             total_seconds += folder_sum
             total_tracks += folder_tracks
 
-            rel = d.relative_to(root)
+            rel = folder.relative_to(root)
             all_years.extend(extract_years_from_text(rel.as_posix()))
+
+    return (
+        per_dir_seconds,
+        per_dir_count,
+        per_dir_sr,
+        per_dir_bit,
+        per_dir_exts,
+        per_dir_files,
+        total_seconds,
+        total_tracks,
+        total_sr,
+        total_bit,
+        total_exts,
+        all_years,
+    )
+
+def collect_synthetic_stats(
+    root: Path,
+) -> tuple[
+    dict[Path, float],
+    dict[Path, int],
+    dict[Path, set[int]],
+    dict[Path, set[int]],
+    dict[Path, set[str]],
+    dict[Path, list[Path]],
+    dict[Path, str | None],
+    float,
+    int,
+    set[int],
+    set[int],
+    set[str],
+    list[int],
+]:
+    """
+    Синтетический набор данных для проверки форматирования без ffprobe/ФС.
+    Данные находятся в synthetic_dataset.py.
+    """
+    from synthetic_dataset import load_synthetic_cases, make_track_paths
+
+    per_dir_seconds: dict[Path, float] = {}
+    per_dir_count: dict[Path, int] = {}
+    per_dir_sr: dict[Path, set[int]] = {}
+    per_dir_bit: dict[Path, set[int]] = {}
+    per_dir_exts: dict[Path, set[str]] = {}
+    per_dir_files: dict[Path, list[Path]] = {}
+    per_dir_dr: dict[Path, str | None] = {}
+
+    total_seconds = 0.0
+    total_tracks = 0
+    total_sr: set[int] = set()
+    total_bit: set[int] = set()
+    total_exts: set[str] = set()
+    all_years: list[int] = []
+
+    for case in load_synthetic_cases():
+        g = case["group"]
+        folder_name = case["folder_name"]
+        secs = float(case["seconds"])
+        sr = int(case["sample_rate"])
+        bit = int(case["bit_depth"])
+        ext = str(case["ext"])
+        track_titles = list(case["track_titles"])
+        dr_text = str(case["dr_text"])
+
+        folder = root / g / folder_name
+        audio_files = make_track_paths(folder, ext, track_titles)
+
+        per_dir_seconds[folder] = secs
+        per_dir_count[folder] = len(audio_files)
+        per_dir_sr[folder] = {sr}
+        per_dir_bit[folder] = {bit}
+        per_dir_exts[folder] = {ext}
+        per_dir_files[folder] = audio_files
+        per_dir_dr[folder] = dr_text
+
+        total_seconds += secs
+        total_tracks += len(audio_files)
+        total_sr.add(sr)
+        total_bit.add(bit)
+        total_exts.add(ext)
+
+        rel = folder.relative_to(root)
+        all_years.extend(extract_years_from_text(rel.as_posix()))
+
+    return (
+        per_dir_seconds,
+        per_dir_count,
+        per_dir_sr,
+        per_dir_bit,
+        per_dir_exts,
+        per_dir_files,
+        per_dir_dr,
+        total_seconds,
+        total_tracks,
+        total_sr,
+        total_bit,
+        total_exts,
+        all_years,
+    )
+
+# ----------------------------
+# CLI / main
+# ----------------------------
+
+def build_arg_parser() -> argparse.ArgumentParser:
+    ap = argparse.ArgumentParser(
+        description="Sum durations grouped per release folder; show bit depth + sample rate; optionally generate BBCode release template."
+    )
+    ap.add_argument("path", nargs="?", default=".", help="Root folder (default: current directory).")
+    ap.add_argument("--ext", action="append", default=[], help="Add extension (e.g. --ext .flac). Repeatable.")
+    ap.add_argument("--include-root", action="store_true", help="Include tracks directly inside the root folder.")
+    ap.add_argument("--flat", action="store_true", help="Flat output without group headers (Albums/Singles).")
+    ap.add_argument("--release", action="store_true", help="Write BBCode release template to /tmp/<root_folder_name>.")
+    ap.add_argument("--dr", default=None, help="Directory with DR reports (e.g. *_dr.txt). Use with --release.")
+    ap.add_argument("--test", action="store_true", help="Generate fake data (no ffprobe/files needed) to test output formatting.")
+    return ap
+
+def normalize_exts(user_exts: list[str]) -> set[str]:
+    """Объединяем дефолтные расширения и пользовательские --ext."""
+    exts = set(AUDIO_EXTS_DEFAULT)
+    for e in user_exts:
+        e = e.strip().lower()
+        if e and not e.startswith("."):
+            e = "." + e
+        if e:
+            exts.add(e)
+    return exts
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_arg_parser().parse_args(argv)
+
+    root = Path(args.path).expanduser().resolve()
+
+    # В режиме --test мы НЕ трогаем файловую систему и не требуем ffprobe
+    if not args.test:
+        if not root.exists() or not root.is_dir():
+            print(f"Error: '{root}' is not a directory.", file=sys.stderr)
+            return 2
+
+        if which("ffprobe") is None:
+            print("Error: ffprobe not found. Install ffmpeg (ffprobe) and retry.", file=sys.stderr)
+            return 3
+
+    exts = normalize_exts(args.ext)
+
+    # Подготовка DR
+    dr_dir: Path | None = None
+    dr_index: dict[str, Path] = {}
+    if args.dr is not None:
+        dr_dir = Path(args.dr).expanduser().resolve()
+        if not dr_dir.exists() or not dr_dir.is_dir():
+            print(f"Warning: --dr path is not a directory: {dr_dir}", file=sys.stderr)
+            dr_dir = None
+        else:
+            dr_index = build_dr_index(dr_dir)
+
+    # ---------- сбор статистики ----------
+    per_dir_dr: dict[Path, str | None] = {}
+
+    if args.test:
+        (
+            per_dir_seconds,
+            per_dir_count,
+            per_dir_sr,
+            per_dir_bit,
+            per_dir_exts,
+            per_dir_files,
+            per_dir_dr,
+            total_seconds,
+            total_tracks,
+            total_sr,
+            total_bit,
+            total_exts,
+            all_years,
+        ) = collect_synthetic_stats(root)
+    else:
+        (
+            per_dir_seconds,
+            per_dir_count,
+            per_dir_sr,
+            per_dir_bit,
+            per_dir_exts,
+            per_dir_files,
+            total_seconds,
+            total_tracks,
+            total_sr,
+            total_bit,
+            total_exts,
+            all_years,
+        ) = collect_real_stats(root, exts, args.include_root)
 
     if not per_dir_seconds:
         print("No audio files found.")
@@ -393,8 +656,8 @@ def main() -> int:
 
     total_releases = len(per_dir_seconds)
 
-    # console items
-    items = []
+    # ---------- подготовка элементов для консольного вывода ----------
+    items: list[tuple[Path, float, int, set[int], set[int]]] = []
     for folder_abs, secs in per_dir_seconds.items():
         rel = folder_abs.relative_to(root)
         cnt = per_dir_count.get(folder_abs, 0)
@@ -404,7 +667,7 @@ def main() -> int:
 
     items.sort(key=lambda x: (group_sort_index(group_key(x[0])), x[0].as_posix().lower()))
 
-    # console output
+    # ---------- вывод в консоль ----------
     if args.flat:
         for rel, secs, cnt, srset, bitset in items:
             print(
@@ -451,7 +714,9 @@ def main() -> int:
             tracklist = build_tracklist_lines(files)
 
             dr_text = None
-            if dr_dir is not None:
+            if args.test:
+                dr_text = per_dir_dr.get(folder_abs)
+            elif dr_dir is not None:
                 dr_text = find_dr_text_for_release(folder_name, dr_dir, dr_index)
 
             grouped.setdefault(g, []).append(
@@ -464,6 +729,7 @@ def main() -> int:
                 }
             )
 
+        # Сортировка релизов внутри группы: по году, затем по названию
         for g, lst in grouped.items():
             lst.sort(key=lambda r: ((r["year"] or 9999), str(r["title"]).lower()))
 
@@ -477,7 +743,7 @@ def main() -> int:
             grouped_releases=grouped,
         )
 
-        out_path = Path("/tmp") / root.name  # без расширения
+        out_path = Path.cwd() / f"{root.name}.txt"
         out_path.write_text(bbcode, encoding="utf-8")
         print(f"\nWrote release template: {out_path}")
 
