@@ -19,10 +19,16 @@ import os
 import re
 import subprocess
 import sys
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Iterable
 
 import shutil
+
+try:
+    import requests
+except ImportError:  # pragma: no cover
+    requests = None  # type: ignore
 
 # Поддерживаемые расширения аудиофайлов по умолчанию
 AUDIO_EXTS_DEFAULT = {
@@ -35,6 +41,116 @@ GROUP_TITLES_RU = {
     "Albums": "Альбомы",
     "Singles": "Синглы",
 }
+
+# ----------------------------
+# Cover upload (FastPic)
+# ----------------------------
+
+class FastPicUploadError(RuntimeError):
+    pass
+
+
+def upload_to_fastpic_get_direct_link(
+    file_path: Path,
+    *,
+    resize_to: int = 500,  # "Уменьшить до 500" на стороне сайта
+    endpoint: str = "https://fastpic.org/upload?api=1",
+    timeout: int = 60,
+    session=None,
+) -> str:
+    """Загружает картинку на FastPic и возвращает Direct Link (<imagepath>).
+
+    ВАЖНО: функция НЕ ресайзит картинку локально — ресайз делает FastPic.
+    """
+    if requests is None:
+        raise RuntimeError("Cover upload requires 'requests'. Install it or run without --release cover upload.")
+
+    if not file_path.is_file():
+        raise FileNotFoundError(file_path)
+
+    s = session or requests.Session()
+
+    data = {
+        "method": "file",
+        "uploading": "1",
+        "check_thumb": "no",
+        # ресайз на стороне fastpic:
+        "check_orig_resize": "1",
+        "orig_resize": str(int(resize_to)),
+    }
+
+    with file_path.open("rb") as f:
+        resp = s.post(endpoint, data=data, files={"file1": f}, timeout=timeout)
+    resp.raise_for_status()
+
+    # FastPic отвечает XML
+    try:
+        root = ET.fromstring(resp.text)
+    except ET.ParseError as e:
+        raise FastPicUploadError(
+            f"Не смог распарсить XML-ответ: {e}. Ответ: {resp.text[:300]!r}"
+        ) from e
+
+    err = root.findtext("error")
+    if err:
+        raise FastPicUploadError(f"FastPic вернул ошибку: {err}")
+
+    direct = root.findtext("imagepath")  # Direct Link
+    if not direct:
+        raise FastPicUploadError(f"В ответе нет <imagepath>. Ответ: {resp.text[:500]!r}")
+
+    return direct.strip()
+
+
+class FastPicCoverUploader:
+    """Uploader с переиспользованием Session и простым in-memory кешем."""
+
+    def __init__(
+        self,
+        *,
+        resize_to: int = 500,
+        endpoint: str = "https://fastpic.org/upload?api=1",
+        timeout: int = 60,
+    ) -> None:
+        if requests is None:
+            raise RuntimeError("FastPicCoverUploader requires 'requests'")
+        self.resize_to = int(resize_to)
+        self.endpoint = endpoint
+        self.timeout = int(timeout)
+        self.session = requests.Session()
+        self._cache: dict[str, str] = {}
+
+    def upload(self, file_path: Path) -> str:
+        key = str(file_path.resolve())
+        if key in self._cache:
+            return self._cache[key]
+
+        url = upload_to_fastpic_get_direct_link(
+            file_path,
+            resize_to=self.resize_to,
+            endpoint=self.endpoint,
+            timeout=self.timeout,
+            session=self.session,
+        )
+        self._cache[key] = url
+        return url
+
+
+def find_cover_jpg(release_folder: Path) -> Path | None:
+    """Ищем cover.jpg в папке релиза (case-insensitive)."""
+    p = release_folder / "cover.jpg"
+    if p.is_file():
+        return p
+
+    try:
+        for child in release_folder.iterdir():
+            if child.is_file() and child.name.lower() == "cover.jpg":
+                return child
+    except FileNotFoundError:
+        return None
+
+    return None
+
 
 # ----------------------------
 # Утилиты форматирования/лейблы
@@ -333,7 +449,8 @@ def make_release_bbcode(
 
             parts.append(f'[spoiler="{spoiler_title}"]\n')
             parts.append("[align=center]")
-            parts.append("[img]COVER_URL[/img]\n")
+            cover = rel.get("cover_url") or "COVER_URL"
+            parts.append(f"[img]{cover}[/img]\n")
             parts.append("[b]Носитель[/b]: WEB [url=https://service.com/123]Service[/url]\n")
             parts.append(f"Продолжительность: {rel['duration']}\n")
             parts.append('[spoiler="Треклист"]\n')
@@ -697,6 +814,13 @@ def main(argv: list[str] | None = None) -> int:
 
     # ---------- --release ----------
     if args.release:
+        cover_uploader: FastPicCoverUploader | None = None
+        if not args.test:
+            if requests is None:
+                print("Warning: 'requests' not installed; skipping FastPic cover uploads.", file=sys.stderr)
+            else:
+                cover_uploader = FastPicCoverUploader(resize_to=500)
+
         year_range = None
         if all_years:
             y_min, y_max = min(all_years), max(all_years)
@@ -719,6 +843,15 @@ def main(argv: list[str] | None = None) -> int:
             elif dr_dir is not None:
                 dr_text = find_dr_text_for_release(folder_name, dr_dir, dr_index)
 
+            cover_url = None
+            if cover_uploader is not None:
+                cover_path = find_cover_jpg(folder_abs)
+                if cover_path is not None:
+                    try:
+                        cover_url = cover_uploader.upload(cover_path)
+                    except Exception as e:
+                        print(f"Warning: cover upload failed for {cover_path}: {e}", file=sys.stderr)
+
             grouped.setdefault(g, []).append(
                 {
                     "title": title,
@@ -726,6 +859,7 @@ def main(argv: list[str] | None = None) -> int:
                     "duration": format_hhmmss(per_dir_seconds[folder_abs]),
                     "tracklist": tracklist,
                     "dr": dr_text,
+                    "cover_url": cover_url,
                 }
             )
 
