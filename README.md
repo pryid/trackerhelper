@@ -3,7 +3,7 @@
 Набор утилит для работы с музыкальной дискографией, разложенной по папкам (например, `Albums/*` и `Singles/*`):
 
 - **`dr.ps1`** — автоматизирует запуск **foobar2000** и измерение **Dynamic Range (DR)** для каждого релиза, сохраняя DR-логи в отдельную папку.
-- **`main.py`** — сканирует дискографию, считает длительность по релизам через **ffprobe**, показывает sample rate / bit depth, и (опционально) генерирует BBCode-шаблон раздачи. Может подхватывать DR-отчёты `*_dr.txt` и вставлять их в BBCode.
+- **`main.py`** — сканирует дискографию, считает длительность по релизам через **ffprobe**, показывает sample rate / bit depth и формирует треклист по файлам; опционально генерирует BBCode-шаблон раздачи. Может подхватывать DR-отчёты `*_dr.txt` и вставлять их в BBCode, а при наличии `cover.jpg` и установленном `requests` — загрузить обложки на FastPic и подставить ссылки.
 - **`synthetic_dataset.py`** — фикстуры для режима `--test` (проверка форматирования без реальных файлов и ffprobe).
 
 ## Требования
@@ -22,6 +22,7 @@
 ### `main.py` (Windows / Linux / macOS)
 - Python **3.10+**
 - `ffprobe` из состава **ffmpeg** (должен быть доступен в `PATH`)
+- `requests` (опционально, нужен для загрузки обложек на FastPic в режиме `--release`)
 
 Проверка:
 ```bash
@@ -88,7 +89,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 ### Если foobar2000 portable / не в стандартном месте
 ```powershell
-.\dr.ps1 -Root "D:\Music\Artist" -FoobarPath "D:\Appsoobar2000oobar2000.exe"
+.\dr.ps1 -Root "D:\Music\Artist" -FoobarPath "D:\Apps\foobar2000\foobar2000.exe"
 ```
 
 ### Часто используемые параметры
@@ -148,6 +149,8 @@ python main.py "/path/to/DiscographyRoot" --release
 Файл будет записан в **текущую рабочую директорию** как:
 - `<имя_корневой_папки>.txt`
 
+В шаблоне остаются плейсхолдеры `ROOT_COVER_URL`, `GENRE`, `Service`, `ЛЕЙБЛ`, `YEAR` — заполни их вручную.
+
 ### Подстановка DR-отчётов в BBCode
 Если у тебя уже есть `*_dr.txt` (например, собранные `dr.ps1`), укажи папку с логами:
 
@@ -156,6 +159,9 @@ python main.py "/path/to/DiscographyRoot" --release --dr "C:\Users\<you>\Music\D
 ```
 
 Скрипт пытается сопоставить DR-файл с папкой релиза по имени (несколько вариантов имён + нормализация пробелов/дефисов). Если отчёт не найден — в BBCode остаётся `info`.
+
+### Автоподстановка обложек через FastPic (опционально)
+Если в папке релиза лежит `cover.jpg` (регистр неважен), и установлен пакет `requests`, то при `--release` скрипт загрузит обложку на FastPic и подставит прямую ссылку в BBCode. Если обложка не найдена или загрузка не удалась — остаётся `COVER_URL`.
 
 ## 3) Режим проверки форматирования без ffprobe/ФС (`--test`)
 ```bash
@@ -181,7 +187,7 @@ python main.py "/any/path" --test --release
 ### `dr.ps1`: “не нашёл foobar2000.exe”
 Передай путь вручную:
 ```powershell
-.\dr.ps1 -Root "D:\Music\Artist" -FoobarPath "D:\Appsoobar2000oobar2000.exe"
+.\dr.ps1 -Root "D:\Music\Artist" -FoobarPath "D:\Apps\foobar2000\foobar2000.exe"
 ```
 
 ### `main.py`: `Error: ffprobe not found`
