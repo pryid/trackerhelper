@@ -473,6 +473,47 @@ def make_release_bbcode(
 
     return "".join(parts)
 
+def make_single_release_bbcode(
+    root_name: str,
+    year_range: str | None,
+    overall_codec: str,
+    release: dict,
+) -> str:
+    title = str(release.get("title") or "").strip() or "TITLE"
+    year_val = release.get("year") or year_range or "YEAR"
+    cover = release.get("cover_url") or "COVER_URL"
+    duration = release.get("duration") or "00:00:00"
+    tracklist = release.get("tracklist") or []
+    dr_text = (release.get("dr") or "info").rstrip("\n")
+
+    parts: list[str] = []
+    parts.append(f"[size=24]{root_name} / {title}[/size]\n\n")
+    parts.append(f"[img=right]{cover}[/img]\n\n")
+    parts.append("[b]Жанр[/b]: GENRE\n")
+    parts.append("[b]Носитель[/b]: WEB [url=https://service.com/123]Service[/url]\n")
+    parts.append("[b]Издатель (лейбл)[/b]: ЛЕЙБЛ\n")
+    parts.append(f"[b]Год издания[/b]: {year_val}\n")
+    parts.append(f"[b]Аудиокодек[/b]: {overall_codec}\n")
+    parts.append("[b]Тип рипа[/b]: tracks\n")
+    parts.append("[b]Источник[/b]: WEB\n")
+    parts.append(f"[b]Продолжительность[/b]: {duration}\n\n")
+
+    parts.append('[spoiler="Треклист"]\n')
+    parts.extend(line + "\n" for line in tracklist)
+    parts.append("[/spoiler]\n\n")
+
+    parts.append('[spoiler="Динамический отчет (DR)"]\n')
+    parts.append("[pre]\n")
+    parts.append(dr_text + "\n")
+    parts.append("[/pre]\n")
+    parts.append("[/spoiler]\n\n")
+
+    parts.append('[spoiler="Об исполнителе (группе)"]\n')
+    parts.append("info\n")
+    parts.append("[/spoiler]\n")
+
+    return "".join(parts)
+
 # ----------------------------
 # Сбор данных
 # ----------------------------
@@ -867,15 +908,33 @@ def main(argv: list[str] | None = None) -> int:
         for g, lst in grouped.items():
             lst.sort(key=lambda r: ((r["year"] or 9999), str(r["title"]).lower()))
 
-        bbcode = make_release_bbcode(
-            root_name=root.name,
-            year_range=year_range,
-            total_duration=format_hhmmss(total_seconds),
-            overall_codec=codec_label(total_exts),
-            overall_bit=bit_label(total_bit),
-            overall_sr=sr_label(total_sr),
-            grouped_releases=grouped,
-        )
+        if total_releases == 1:
+            single_release = None
+            for rels in grouped.values():
+                if rels:
+                    single_release = rels[0]
+                    break
+
+            if single_release is None:
+                print("Warning: no releases found for BBCode generation.", file=sys.stderr)
+                return 0
+
+            bbcode = make_single_release_bbcode(
+                root_name=root.name,
+                year_range=year_range,
+                overall_codec=codec_label(total_exts),
+                release=single_release,
+            )
+        else:
+            bbcode = make_release_bbcode(
+                root_name=root.name,
+                year_range=year_range,
+                total_duration=format_hhmmss(total_seconds),
+                overall_codec=codec_label(total_exts),
+                overall_bit=bit_label(total_bit),
+                overall_sr=sr_label(total_sr),
+                grouped_releases=grouped,
+            )
 
         out_path = Path.cwd() / f"{root.name}.txt"
         out_path.write_text(bbcode, encoding="utf-8")
