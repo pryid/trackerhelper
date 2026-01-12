@@ -101,11 +101,12 @@ def release_dir_from_path(p: Path) -> Optional[str]:
     Считает релизом папку первого уровня под Albums/ или Singles/.
     Пример: Albums/Clams Casino - Moon Trip Radio - 2019/01 - ... -> Albums/Clams Casino - Moon Trip Radio - 2019
     """
-    parts = p.parts
-    if "Albums" in parts:
-        i = parts.index("Albums")
-    elif "Singles" in parts:
-        i = parts.index("Singles")
+    parts = list(p.parts)
+    lower_parts = [part.lower() for part in parts]
+    if "albums" in lower_parts:
+        i = lower_parts.index("albums")
+    elif "singles" in lower_parts:
+        i = lower_parts.index("singles")
     else:
         return None
     if i + 1 >= len(parts):
@@ -117,9 +118,11 @@ def score_release(rel: str) -> int:
     """
     Эвристика "что лучше оставить", если одинаковый контент.
     """
+    rel_path = Path(rel)
+    parts = [part.lower() for part in rel_path.parts]
     s = rel.lower()
     sc = 0
-    if s.startswith("albums/"):
+    if "albums" in parts:
         sc += 100
     if "deluxe" in s:
         sc += 6
@@ -149,52 +152,55 @@ def safe_move(src: Path, dst_dir: Path) -> Path:
     return target
 
 
-def main() -> int:
-    which_or_die("fpcalc")
-
-    ap = argparse.ArgumentParser(
-        description="Удаление релизов-дублей по содержанию звука (Chromaprint/fpcalc)."
+def add_dedupe_subparser(subparsers) -> argparse.ArgumentParser:
+    parser = subparsers.add_parser(
+        "dedupe",
+        help="Find duplicate releases by audio fingerprint.",
+        description="Удаление релизов-дублей по содержанию звука (Chromaprint/fpcalc).",
     )
-    ap.add_argument(
+    parser.add_argument(
         "--roots",
         nargs="*",
         default=["Albums", "Singles"],
         help="Корневые папки для сканирования (по умолчанию: Albums Singles).",
     )
-    ap.add_argument(
+    parser.add_argument(
         "--ext",
         nargs="*",
         default=sorted(AUDIO_EXTS_DEFAULT),
         help="Список расширений аудио (по умолчанию: распространённые).",
     )
-    ap.add_argument(
+    parser.add_argument(
         "--out-dir",
         default="_dedupe_reports",
         help="Куда писать отчёты (по умолчанию: ./_dedupe_reports).",
     )
-    ap.add_argument(
+    parser.add_argument(
         "--jobs",
         type=int,
         default=max(1, (os.cpu_count() or 2)),
         help="Параллельность при fpcalc (по умолчанию: cpu_count).",
     )
-    ap.add_argument(
+    parser.add_argument(
         "--move-to",
         default=None,
         help="Если задано: переместить найденные релизы в указанную папку (без удаления).",
     )
-    ap.add_argument(
+    parser.add_argument(
         "--delete",
         action="store_true",
         help="Если задано: удалить найденные релизы (ОПАСНО).",
     )
-    ap.add_argument(
+    parser.add_argument(
         "--quiet",
         action="store_true",
         help="Меньше вывода в stdout.",
     )
+    return parser
 
-    args = ap.parse_args()
+
+def run_dedupe(args: argparse.Namespace) -> int:
+    which_or_die("fpcalc")
 
     if args.delete and args.move_to:
         print("ERROR: нельзя одновременно --delete и --move-to", file=sys.stderr)
@@ -408,6 +414,18 @@ def main() -> int:
             print(f"Удалено релизов: {deleted}")
 
     return 0
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(
+        description="Удаление релизов-дублей по содержанию звука (Chromaprint/fpcalc)."
+    )
+    add_dedupe_subparser(ap.add_subparsers(dest="command"))
+    args = ap.parse_args()
+    if args.command != "dedupe":
+        ap.print_help()
+        return 1
+    return run_dedupe(args)
 
 
 if __name__ == "__main__":

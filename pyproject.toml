@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trackerhelper"
+version = "0.2.2"
+description = "Utilities for music discography folders (stats, BBCode, normalize)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+
+[project.optional-dependencies]
+cover = ["requests"]
+
+[project.scripts]
+trackerhelper = "trackerhelper.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["trackerhelper*"]

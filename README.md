@@ -3,7 +3,7 @@
 Набор утилит для работы с музыкальной дискографией, разложенной по папкам (например, `Albums/*` и `Singles/*`):
 
 - **`dr.ps1`** — автоматизирует запуск **foobar2000** и измерение **Dynamic Range (DR)** для каждого релиза, сохраняя DR-логи в отдельную папку.
-- **`main.py`** — сканирует дискографию, считает длительность по релизам через **ffprobe**, показывает sample rate / bit depth и формирует треклист по файлам; опционально генерирует BBCode-шаблон раздачи. Может подхватывать DR-отчёты `*_dr.txt` и вставлять их в BBCode, а при наличии `cover.jpg` и установленном `requests` — загрузить обложки на FastPic и подставить ссылки.
+- **`trackerhelper`** — CLI-утилита для сканирования дискографии, подсчёта длительности и генерации BBCode-шаблонов; умеет подхватывать DR-отчёты `*_dr.txt` и (опционально) загружать `cover.jpg` на FastPic.
 - **`synthetic_dataset.py`** — фикстуры для режима `--test` (проверка форматирования без реальных файлов и ffprobe).
 
 ## Требования
@@ -19,10 +19,10 @@
 
 > Если DR Meter сохраняет логи в другое место (глобальную папку), `dr.ps1` их не увидит, потому что ищет лог внутри staging-папки релиза.
 
-### `main.py` (Windows / Linux / macOS)
+### `trackerhelper` (Windows / Linux / macOS)
 - Python **3.10+**
 - `ffprobe` из состава **ffmpeg** (должен быть доступен в `PATH`)
-- `requests` (опционально, нужен для загрузки обложек на FastPic в режиме `--release`)
+- `requests` (опционально, нужен для загрузки обложек на FastPic в команде `release`)
 
 Проверка:
 ```bash
@@ -56,6 +56,12 @@ DiscographyRoot/
 ```bash
 git clone https://github.com/pryid/trackerhelper
 cd trackerhelper
+pip install .
+```
+
+Опционально, для загрузки обложек:
+```bash
+pip install .[cover]
 ```
 
 На Windows, если PowerShell запрещает запуск скриптов, можно разрешить для текущего пользователя:
@@ -110,11 +116,11 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 .\dr.ps1 -Root "\\NAS\Music\Artist" -OutDir "D:\Reports\DR"
 ```
 
-## 2) Подсчёт длительности/параметров + генерация BBCode (`main.py`)
+## 2) Подсчёт длительности/параметров + генерация BBCode (`trackerhelper`)
 
 ### Базовый запуск (группированный вывод)
 ```bash
-python main.py "/path/to/DiscographyRoot"
+trackerhelper stats "/path/to/DiscographyRoot"
 ```
 
 Вывод по каждому релизу содержит:
@@ -128,41 +134,41 @@ python main.py "/path/to/DiscographyRoot"
 По умолчанию корень не считается релизом, чтобы не смешивать файлы. Если нужно — добавь `--include-root`:
 
 ```bash
-python main.py "/path/to/DiscographyRoot" --include-root
-```
-
-### Плоский вывод без заголовков групп
-```bash
-python main.py "/path/to/DiscographyRoot" --flat
+trackerhelper stats "/path/to/DiscographyRoot" --include-root
 ```
 
 ### Добавить расширение (повторяемый параметр)
 ```bash
-python main.py "/path/to/DiscographyRoot" --ext .ape --ext .tak
+trackerhelper stats "/path/to/DiscographyRoot" --ext .ape --ext .tak
 ```
 
 ### Нормализация имён папок релизов
 По умолчанию выполняется "сухой" прогон (без переименований):
 
 ```bash
-python main.py "/path/to/DiscographyRoot" --normalize
+trackerhelper normalize "/path/to/DiscographyRoot"
 ```
 
 Чтобы применить изменения:
 
 ```bash
-python main.py "/path/to/DiscographyRoot" --normalize --y
+trackerhelper normalize "/path/to/DiscographyRoot" --apply
 ```
 
 Форматы:
 - один релиз: `Artist - Album (Year)`
 - несколько релизов: `Year - Artist - Album`
 
-Важно: при `--normalize` данные берутся из **тегов аудиофайлов** (album/artist), а год — из имени папки. Если теги/год отсутствуют, папка будет пропущена.
+Важно: в команде `normalize` данные берутся из **тегов аудиофайлов** (album/artist), а год — из имени папки. Если теги/год отсутствуют, папка будет пропущена.
 
 ### Генерация BBCode-шаблона дискографии
 ```bash
-python main.py "/path/to/DiscographyRoot" --release
+trackerhelper release "/path/to/DiscographyRoot"
+```
+
+Отключить загрузку обложек на FastPic:
+```bash
+trackerhelper release "/path/to/DiscographyRoot" --no-cover
 ```
 
 Файл будет записан в **текущую рабочую директорию** как:
@@ -174,19 +180,28 @@ python main.py "/path/to/DiscographyRoot" --release
 Если у тебя уже есть `*_dr.txt` (например, собранные `dr.ps1`), укажи папку с логами:
 
 ```bash
-python main.py "/path/to/DiscographyRoot" --release --dr "C:\Users\<you>\Music\DR"
+trackerhelper release "/path/to/DiscographyRoot" --dr "C:\Users\<you>\Music\DR"
 ```
 
 Скрипт пытается сопоставить DR-файл с папкой релиза по имени (несколько вариантов имён + нормализация пробелов/дефисов). Если отчёт не найден — в BBCode остаётся `info`.
 
 ### Автоподстановка обложек через FastPic (опционально)
-Если в папке релиза лежит `cover.jpg` (регистр неважен), и установлен пакет `requests`, то при `--release` скрипт загрузит обложку на FastPic и подставит прямую ссылку в BBCode. Если обложка не найдена или загрузка не удалась — остаётся `COVER_URL`.
+Если в папке релиза лежит `cover.jpg` (регистр неважен), и установлен пакет `requests`, то в команде `release` утилита загрузит обложку на FastPic и подставит прямую ссылку в BBCode. Если обложка не найдена или загрузка не удалась — остаётся `COVER_URL`.
 
 ## 3) Режим проверки форматирования без ffprobe/ФС (`--test`)
 ```bash
-python main.py "/any/path" --test
-python main.py "/any/path" --test --release
+trackerhelper stats "/any/path" --test
+trackerhelper release "/any/path" --test
 ```
+
+## 4) Поиск дублей релизов по аудио-отпечаткам (`trackerhelper dedupe`)
+```bash
+trackerhelper dedupe --roots Albums Singles
+```
+
+Опции:
+- `--move-to DIR` — переместить найденные релизы в указанную папку
+- `--delete` — удалить найденные релизы (опасно)
 
 `--test` использует данные из `synthetic_dataset.py` и позволяет быстро проверить, как выглядит консольный вывод и BBCode, не имея реальных файлов.
 
@@ -209,10 +224,10 @@ python main.py "/any/path" --test --release
 .\dr.ps1 -Root "D:\Music\Artist" -FoobarPath "D:\Apps\foobar2000\foobar2000.exe"
 ```
 
-### `main.py`: `Error: ffprobe not found`
+### `trackerhelper`: `Error: ffprobe not found`
 Установи ffmpeg и добавь его в `PATH`, чтобы команда `ffprobe` запускалась из терминала.
 
-### `main.py`: bit depth / sample rate = `unknown` или `mixed`
+### `trackerhelper`: bit depth / sample rate = `unknown` или `mixed`
 Это нормально:
 - некоторые форматы/файлы не содержат нужных полей, или ffprobe их не возвращает;
 - внутри релиза могут быть разные параметры → `mixed`.
