@@ -17,8 +17,9 @@ class DatasetFfprobe(TagsReader):
     def __init__(self, tag_map: dict[str, dict[str, str]]) -> None:
         self.tag_map = tag_map
 
-    def get_tags(self, path: Path) -> dict[str, str]:
-        return self.tag_map.get(path.as_posix(), {})
+    def get_tags(self, file_path: Path) -> dict[str, str]:
+        tags = self.tag_map.get(file_path.as_posix())
+        return tags if tags is not None else {}
 
 
 def build_tag_map(root: Path, releases: list[dict]) -> dict[str, dict[str, str]]:

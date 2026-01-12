@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from pathlib import Path
+import importlib
 import xml.etree.ElementTree as ET
 
 try:
-    import requests
-except ImportError:  # pragma: no cover
+    requests = importlib.import_module("requests")
+except Exception:  # pragma: no cover
     requests = None
 
 

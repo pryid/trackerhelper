@@ -6,11 +6,12 @@ from trackerhelper.tags import release_metadata_from_tags
 
 
 class DummyFfprobe(TagsReader):
-    def __init__(self, tags_by_path):
+    def __init__(self, tags_by_path: dict[Path, dict[str, str]]) -> None:
         self.tags_by_path = tags_by_path
 
-    def get_tags(self, path):
-        return self.tags_by_path.get(path, {})
+    def get_tags(self, file_path: Path) -> dict[str, str]:
+        tags = self.tags_by_path.get(file_path)
+        return tags if tags is not None else {}
 
 
 class ReleaseMetadataFromTagsTests(unittest.TestCase):
