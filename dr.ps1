@@ -48,7 +48,7 @@ param(
 
 
 
-  # where to keep staging copies (local only)
+  # where to keep staging copies (used only for read-only sources)
 
   [string]$StageRoot = "",
 
@@ -69,6 +69,28 @@ param(
 
 
 $ErrorActionPreference = "Stop"
+
+function New-ExtSet([string[]]$exts) {
+
+  $set = New-Object "System.Collections.Generic.HashSet[string]" ([StringComparer]::OrdinalIgnoreCase)
+
+  foreach ($eRaw in $exts) {
+
+    if (-not $eRaw) { continue }
+
+    $e = $eRaw.Trim()
+
+    if (-not $e) { continue }
+
+    if ($e[0] -ne '.') { $e = "." + $e }
+
+    $null = $set.Add($e)
+
+  }
+
+  return $set
+
+}
 
 
 
@@ -119,6 +141,31 @@ function Sanitize-FileName([string]$name) {
   if (-not $out) { $out = "release" }
 
   return $out
+
+}
+
+
+function Test-WriteableFolder([string]$folder) {
+
+  try {
+
+    $tmpName = "._th_write_test_" + [Guid]::NewGuid().ToString("N") + ".tmp"
+
+    $tmpPath = Join-Path $folder $tmpName
+
+    $fs = [IO.File]::Open($tmpPath, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::None)
+
+    $fs.Close()
+
+    Remove-Item -LiteralPath $tmpPath -Force -ErrorAction SilentlyContinue
+
+    return $true
+
+  } catch {
+
+    return $false
+
+  }
 
 }
 
@@ -196,11 +243,13 @@ function Copy-ReleaseToStage([string]$releaseFolder, [string[]]$files, [string]$
 
   }
 
-  New-Item -ItemType Directory -Path $stageFolder -Force | Out-Null
+  [IO.Directory]::CreateDirectory($stageFolder) | Out-Null
 
 
 
   $dstFiles = New-Object System.Collections.Generic.List[string]
+
+  $dirSet = New-Object "System.Collections.Generic.HashSet[string]" ([StringComparer]::OrdinalIgnoreCase)
 
   foreach ($f in $files) {
 
@@ -210,7 +259,11 @@ function Copy-ReleaseToStage([string]$releaseFolder, [string[]]$files, [string]$
 
     $destDir = Split-Path -Parent $dest
 
-    New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+    if ($dirSet.Add($destDir)) {
+
+      [IO.Directory]::CreateDirectory($destDir) | Out-Null
+
+    }
 
     Copy-Item -LiteralPath $f -Destination $dest -Force
 
@@ -245,16 +298,67 @@ function Wait-ForLog([string]$folder, [datetime]$startTime, [int]$timeoutSec, [s
   $sec = 0
 
 
+  $log = Find-NewLog -folder $folder -startTime $startTime -nameRegex $nameRegex
+
+  if ($log) { return $log }
+
+
+
+  $watcher = $null
+
+  $useWatcher = $false
+
+  try {
+
+    $watcher = New-Object System.IO.FileSystemWatcher
+
+    $watcher.Path = $folder
+
+    $watcher.IncludeSubdirectories = $true
+
+    $watcher.Filter = "*"
+
+    $watcher.NotifyFilter = [IO.NotifyFilters]'FileName, LastWrite, CreationTime'
+
+    $watcher.EnableRaisingEvents = $true
+
+    $useWatcher = $true
+
+  } catch {
+
+    $useWatcher = $false
+
+  }
+
+
 
   while ((Get-Date) -lt $deadline) {
 
+    if ($useWatcher) {
+
+      $remainingMs = [int][Math]::Max(1, ($deadline - (Get-Date)).TotalMilliseconds)
+
+      $waitMs = [int][Math]::Min(1000, $remainingMs)
+
+      $null = $watcher.WaitForChanged([IO.WatcherChangeTypes]::All, $waitMs)
+
+    } else {
+
+      Start-Sleep -Seconds 1
+
+    }
+
+
+
     $log = Find-NewLog -folder $folder -startTime $startTime -nameRegex $nameRegex
 
-    if ($log) { return $log }
+    if ($log) {
 
+      if ($watcher) { $watcher.Dispose() }
 
+      return $log
 
-    Start-Sleep -Seconds 1
+    }
 
     $sec++
 
@@ -275,6 +379,8 @@ function Wait-ForLog([string]$folder, [datetime]$startTime, [int]$timeoutSec, [s
   }
 
 
+
+  if ($watcher) { $watcher.Dispose() }
 
   return $null
 
@@ -324,7 +430,7 @@ if (-not $OutDir) {
 
 }
 
-New-Item -ItemType Directory -Path $OutDir -Force | Out-Null
+[IO.Directory]::CreateDirectory($OutDir) | Out-Null
 
 
 
@@ -334,8 +440,6 @@ if (-not $StageRoot) {
 
 }
 
-New-Item -ItemType Directory -Path $StageRoot -Force | Out-Null
-
 
 
 Write-Host "Root:     $rootResolved"
@@ -344,13 +448,17 @@ Write-Host "Foobar:   $fb2k"
 
 Write-Host "OutDir:   $OutDir"
 
-Write-Host "StageRoot $StageRoot"
+Write-Host "StageRoot $StageRoot (read-only only)"
 
 Write-Host "Cmd:      $CommandName"
 
 Write-Host ""
 
 
+
+$ExtSet = New-ExtSet $Ext
+
+$stageRootReady = $false
 
 $relFolders = Get-ReleaseFolders $rootResolved $Groups
 
@@ -366,7 +474,7 @@ foreach ($rf in $relFolders) {
 
   $srcAudio = Get-ChildItem -LiteralPath $releaseFolder -Recurse -File -ErrorAction SilentlyContinue |
 
-    Where-Object { $Ext -contains $_.Extension.ToLower() } |
+    Where-Object { $ExtSet.Contains($_.Extension) } |
 
     Sort-Object FullName |
 
@@ -384,39 +492,59 @@ foreach ($rf in $relFolders) {
 
 
 
-  Write-Host ("DR scan: {0} ({1} tracks) [SMB read-only -> staging]" -f $releaseName, $srcAudio.Count)
+  $useStage = -not (Test-WriteableFolder $releaseFolder)
 
+  if ($useStage) {
 
+    if (-not $stageRootReady) {
 
-  # stage to a local folder (log cannot be created on read-only)
+      [IO.Directory]::CreateDirectory($StageRoot) | Out-Null
 
-  $stageFolder = Join-Path $StageRoot (Sanitize-FileName $releaseName)
+      $stageRootReady = $true
 
-  Write-Host ("  staging -> " + $stageFolder)
+    }
 
-  $stageAudio = Copy-ReleaseToStage -releaseFolder $releaseFolder -files $srcAudio -stageFolder $stageFolder
+    Write-Host ("DR scan: {0} ({1} tracks) [read-only -> staging]" -f $releaseName, $srcAudio.Count)
 
+    # stage to a local folder (log cannot be created on read-only)
 
+    $stageFolder = Join-Path $StageRoot (Sanitize-FileName $releaseName)
 
-  # remove old logs from staging (avoid picking up stale ones)
+    Write-Host ("  staging -> " + $stageFolder)
 
-  Get-ChildItem -LiteralPath $stageFolder -Recurse -File -ErrorAction SilentlyContinue |
+    $scanAudio = Copy-ReleaseToStage -releaseFolder $releaseFolder -files $srcAudio -stageFolder $stageFolder
 
-    Where-Object { $_.Name -match $LogNameRegex } |
+    $logFolder = $stageFolder
 
-    Remove-Item -Force -ErrorAction SilentlyContinue
+    # remove old logs from staging (avoid picking up stale ones)
+
+    Get-ChildItem -LiteralPath $stageFolder -Recurse -File -ErrorAction SilentlyContinue |
+
+      Where-Object { $_.Name -match $LogNameRegex } |
+
+      Remove-Item -Force -ErrorAction SilentlyContinue
+
+  } else {
+
+    Write-Host ("DR scan: {0} ({1} tracks) [direct]" -f $releaseName, $srcAudio.Count)
+
+    $scanAudio = $srcAudio
+
+    $logFolder = $releaseFolder
+
+  }
 
 
 
   $start = Get-Date
 
-  Start-DrScan -fb2k $fb2k -cmdName $CommandName -files $stageAudio -show:$ShowFoobar
+  Start-DrScan -fb2k $fb2k -cmdName $CommandName -files $scanAudio -show:$ShowFoobar
 
 
 
   Write-Host -NoNewline "  waiting log "
 
-  $log = Wait-ForLog -folder $stageFolder -startTime $start -timeoutSec $TimeoutSec -nameRegex $LogNameRegex
+  $log = Wait-ForLog -folder $logFolder -startTime $start -timeoutSec $TimeoutSec -nameRegex $LogNameRegex
 
   Write-Host ""
 
@@ -428,7 +556,11 @@ foreach ($rf in $relFolders) {
 
     Write-Warning "  For diagnostics: run with -LogNameRegex '.*\\.(txt|log)$' and see what files are created."
 
-    if (-not $KeepStage) { Remove-Item -LiteralPath $stageFolder -Recurse -Force -ErrorAction SilentlyContinue }
+    if ($useStage -and -not $KeepStage) {
+
+      Remove-Item -LiteralPath $stageFolder -Recurse -Force -ErrorAction SilentlyContinue
+
+    }
 
     break
 
@@ -446,7 +578,7 @@ foreach ($rf in $relFolders) {
 
 
 
-  if (-not $KeepStage) {
+  if ($useStage -and -not $KeepStage) {
 
     Remove-Item -LiteralPath $stageFolder -Recurse -Force -ErrorAction SilentlyContinue
 

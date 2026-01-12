@@ -18,12 +18,12 @@ WARNING: You must enable automatic DR log saving in foobar2000, otherwise `dr.ps
 - DR Meter component installed
 - Automatic DR log writing enabled
 
-If DR Meter saves logs to a global folder, `dr.ps1` will not see them because it expects the log inside the release staging folder.
+If DR Meter saves logs to a global folder, `dr.ps1` will not see them because it expects the log inside the release folder (or staging copy when the source is read-only).
 
 ### `trackerhelper` (Windows / Linux / macOS)
 - Python 3.10+
 - `ffprobe` from ffmpeg available in `PATH`
-- `requests` (optional, only for FastPic uploads in `release`)
+- `requests` (used for FastPic uploads in `release`, installed with the package)
 
 Check:
 ```bash
@@ -58,11 +58,6 @@ Notes:
 pip install trackerhelper
 ```
 
-Optional, for cover uploads:
-```bash
-pip install trackerhelper[cover]
-```
-
 Developer install from repo:
 ```bash
 git clone https://github.com/pryid/trackerhelper
@@ -87,9 +82,9 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 By default the script:
 - looks for releases in `Root\Albums\*` and `Root\Singles\*` if those groups exist,
 - otherwise treats `Root\*` as releases,
-- copies each release into a local staging folder (needed if the source is read-only, for example SMB),
+- copies each release into a local staging folder only when the source is read-only (for example SMB),
 - runs foobar2000 context menu command `Measure Dynamic Range`,
-- waits for a `foo_dr*.txt|log` file inside staging,
+- waits for a `foo_dr*.txt|log` file inside the release folder (or staging if read-only),
 - copies the log into the reports folder.
 
 ### Where reports are saved
@@ -112,7 +107,7 @@ File name: `<release_name>_dr.txt` (release name comes from the folder name; inv
 - `-TimeoutSec` max wait per release (default: 1800 seconds)
 - `-LogNameRegex` log filename regex (default: `^foo_dr.*\.(txt|log)$`)
 - `-OutDir` output folder for final `*_dr.txt`
-- `-StageRoot` staging folder location (local)
+- `-StageRoot` staging folder location (used only for read-only sources)
 - `-KeepStage` keep staging folder (useful for debugging)
 - `-ShowFoobar` show foobar window (default is minimized)
 
@@ -197,7 +192,7 @@ trackerhelper release "/path/to/DiscographyRoot" --dr "C:\Users\<you>\Music\DR"
 The tool tries to match DR logs by folder name (several name patterns plus whitespace/dash normalization). If no report is found, BBCode keeps `info`.
 
 ### FastPic cover upload (optional)
-If the release folder contains `cover.jpg` (case-insensitive) and `requests` is installed, `release` uploads the cover to FastPic and inserts the direct link. If not found or upload fails, it keeps `COVER_URL`.
+If the release folder contains `cover.jpg` (case-insensitive), `release` uploads the cover to FastPic and inserts the direct link. If not found or upload fails, it keeps `COVER_URL`.
 
 ## 3) Formatting-only mode (`--test`)
 ```bash
@@ -227,7 +222,7 @@ For diagnostics:
 ```powershell
 .\dr.ps1 -Root "D:\Music\Artist" -LogNameRegex ".*\.(txt|log)$" -KeepStage
 ```
-Check what files are created inside the staging folder.
+Check what files are created inside the release folder (or the staging folder if the source is read-only).
 
 ### `dr.ps1`: "cannot find foobar2000.exe"
 Provide the path manually:

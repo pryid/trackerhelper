@@ -189,7 +189,7 @@ def run_release(args: argparse.Namespace) -> int:
         folder_name = rel.path.name
         title, year = parse_release_title_and_year(folder_name)
 
-        tracklist = build_tracklist_lines(rel.audio_files)
+        tracklist = build_tracklist_lines(rel.audio_files, sort=False)
 
         dr_text = None
         if args.test:

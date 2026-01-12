@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from pathlib import Path
 
 from .constants import TAG_KEYS_ALBUM, TAG_KEYS_ALBUM_ARTIST, TAG_KEYS_ARTIST
@@ -18,9 +19,7 @@ def tag_value(tags: dict[str, str], keys: list[str]) -> str | None:
 def most_common_str(values: list[str]) -> str | None:
     if not values:
         return None
-    counts: dict[str, int] = {}
-    for v in values:
-        counts[v] = counts.get(v, 0) + 1
+    counts = Counter(values)
     return max(counts.items(), key=lambda x: (x[1], -len(x[0]), x[0].lower()))[0]
 
 

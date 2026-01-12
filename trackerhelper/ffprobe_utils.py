@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from pathlib import Path
 
@@ -74,7 +75,7 @@ class FfprobeClient:
             return {}
 
     def get_audio_info(self, file_path: Path) -> tuple[float | None, int | None, int | None]:
-        key = str(file_path.resolve())
+        key = os.fspath(file_path)
         if key in self._audio_cache:
             return self._audio_cache[key]
 
@@ -92,7 +93,7 @@ class FfprobeClient:
         return info
 
     def get_tags(self, file_path: Path) -> dict[str, str]:
-        key = str(file_path.resolve())
+        key = os.fspath(file_path)
         if key in self._tag_cache:
             return self._tag_cache[key]
 

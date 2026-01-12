@@ -56,7 +56,8 @@ def make_release_bbcode(
             parts.append(f"[b]{labels['media']}[/b]: WEB [url=https://service.com/123]Service[/url]\n")
             parts.append(f"{labels['duration']}: {rel.duration}\n")
             parts.append(f'[spoiler="{labels["tracklist"]}"]\n')
-            parts.extend(line + "\n" for line in rel.tracklist)
+            if rel.tracklist:
+                parts.append("\n".join(rel.tracklist) + "\n")
             parts.append("[/spoiler]\n")
             parts.append("[/align]\n\n")
 
@@ -106,7 +107,8 @@ def make_single_release_bbcode(
     parts.append(f"[b]{labels['duration']}[/b]: {duration}\n\n")
 
     parts.append(f'[spoiler="{labels["tracklist"]}"]\n')
-    parts.extend(line + "\n" for line in tracklist)
+    if tracklist:
+        parts.append("\n".join(tracklist) + "\n")
     parts.append("[/spoiler]\n\n")
 
     parts.append(f'[spoiler="{labels["dr_report"]}"]\n')

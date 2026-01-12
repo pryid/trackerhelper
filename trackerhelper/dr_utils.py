@@ -26,14 +26,17 @@ def read_text_guess(path: Path) -> str:
     Try to read text using common encodings.
     Useful for DR reports that are sometimes cp1251.
     """
+    try:
+        data = path.read_bytes()
+    except Exception:
+        return path.read_text(encoding="utf-8", errors="replace")
+
     for enc in ("utf-8-sig", "utf-8", "cp1251", "latin-1"):
         try:
-            return path.read_text(encoding=enc)
+            return data.decode(enc)
         except UnicodeDecodeError:
             continue
-        except Exception:
-            break
-    return path.read_text(encoding="utf-8", errors="replace")
+    return data.decode("utf-8", errors="replace")
 
 
 def build_dr_index(dr_dir: Path) -> dict[str, Path]:

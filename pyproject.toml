@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "trackerhelper"
-version = "0.2.5"
+version = "0.2.6"
 description = "Utilities for music discography folders (stats, BBCode, normalize)."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -12,6 +12,7 @@ license = "0BSD"
 license-files = ["LICENSE"]
 authors = [{ name = "pryid" }]
 keywords = ["audio", "bbcode", "chromaprint", "discography", "ffprobe", "music"]
+dependencies = ["requests"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
@@ -23,9 +24,6 @@ classifiers = [
 [project.urls]
 Homepage = "https://github.com/pryid/trackerhelper"
 Issues = "https://github.com/pryid/trackerhelper/issues"
-
-[project.optional-dependencies]
-cover = ["requests"]
 
 [project.scripts]
 trackerhelper = "trackerhelper.cli:main"

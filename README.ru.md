@@ -17,12 +17,12 @@
 - Установленный компонент **DR Meter** в foobar2000
 - Включённая опция **автоматической записи лога DR** (иначе лог не появится)
 
-> Если DR Meter сохраняет логи в другое место (глобальную папку), `dr.ps1` их не увидит, потому что ищет лог внутри staging-папки релиза.
+> Если DR Meter сохраняет логи в другое место (глобальную папку), `dr.ps1` их не увидит, потому что ищет лог внутри папки релиза (или внутри staging-копии, если источник read-only).
 
 ### `trackerhelper` (Windows / Linux / macOS)
 - Python **3.10+**
 - `ffprobe` из состава **ffmpeg** (должен быть доступен в `PATH`)
-- `requests` (опционально, нужен для загрузки обложек на FastPic в команде `release`)
+- `requests` (нужен для загрузки обложек на FastPic в команде `release`, устанавливается вместе с пакетом)
 
 Проверка:
 ```bash
@@ -57,11 +57,6 @@ DiscographyRoot/
 pip install trackerhelper
 ```
 
-Опционально, для загрузки обложек:
-```bash
-pip install trackerhelper[cover]
-```
-
 Разработка из репозитория:
 ```bash
 git clone https://github.com/pryid/trackerhelper
@@ -87,9 +82,9 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 По умолчанию скрипт:
 - ищет релизы в `Root\Albums\*` и `Root\Singles\*` (если такие группы есть),
 - иначе считает релизами папки `Root\*`,
-- копирует каждый релиз в локальный staging (чтобы записать лог даже если источник read-only, например SMB),
+- копирует релиз в локальный staging только если источник read-only (например, SMB),
 - запускает foobar2000 с context menu командой `Measure Dynamic Range`,
-- ждёт появления лога `foo_dr*.txt|log` внутри staging,
+- ждёт появления лога `foo_dr*.txt|log` внутри папки релиза (или внутри staging, если источник read-only),
 - копирует лог в папку отчётов.
 
 ### Где будут отчёты
@@ -112,7 +107,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 - `-TimeoutSec` — максимальное ожидание лога на релиз (по умолчанию 1800 сек).
 - `-LogNameRegex` — регулярка для имени лога (по умолчанию `^foo_dr.*\.(txt|log)$`).
 - `-OutDir` — куда сохранять итоговые `*_dr.txt`.
-- `-StageRoot` — где держать временные копии релизов (локально).
+- `-StageRoot` — где держать временные копии релизов (используется только для read-only источников).
 - `-KeepStage` — не удалять staging (удобно для диагностики).
 - `-ShowFoobar` — показывать окно foobar (иначе запускается minimized).
 
@@ -201,7 +196,7 @@ trackerhelper release "/path/to/DiscographyRoot" --dr "C:\Users\<you>\Music\DR"
 Скрипт пытается сопоставить DR-файл с папкой релиза по имени (несколько вариантов имён + нормализация пробелов/дефисов). Если отчёт не найден — в BBCode остаётся `info`.
 
 ### Автоподстановка обложек через FastPic (опционально)
-Если в папке релиза лежит `cover.jpg` (регистр неважен), и установлен пакет `requests`, то в команде `release` утилита загрузит обложку на FastPic и подставит прямую ссылку в BBCode. Если обложка не найдена или загрузка не удалась — остаётся `COVER_URL`.
+Если в папке релиза лежит `cover.jpg` (регистр неважен), то в команде `release` утилита загрузит обложку на FastPic и подставит прямую ссылку в BBCode. Если обложка не найдена или загрузка не удалась — остаётся `COVER_URL`.
 
 ## 3) Режим проверки форматирования без ffprobe/ФС (`--test`)
 ```bash
@@ -231,7 +226,7 @@ trackerhelper dedupe --roots Albums Singles
 ```powershell
 .\dr.ps1 -Root "D:\Music\Artist" -LogNameRegex ".*\.(txt|log)$" -KeepStage
 ```
-После этого проверь, какие файлы создаются в staging-папке.
+После этого проверь, какие файлы создаются в папке релиза (или в staging, если источник read-only).
 
 ### `dr.ps1`: “не нашёл foobar2000.exe”
 Передай путь вручную:

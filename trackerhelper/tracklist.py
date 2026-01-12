@@ -6,7 +6,7 @@ from pathlib import Path
 _TRACK_NUM_RE = re.compile(r"^\s*(\d{1,3})\s*([.\-_\s]+)\s*(.*)$")
 
 
-def build_tracklist_lines(audio_files: list[Path]) -> list[str]:
+def build_tracklist_lines(audio_files: list[Path], *, sort: bool = True) -> list[str]:
     """
     Builds a tracklist from file names.
 
@@ -17,7 +17,8 @@ def build_tracklist_lines(audio_files: list[Path]) -> list[str]:
     lines: list[str] = []
     auto_n = 1
 
-    for f in sorted(audio_files):
+    files = sorted(audio_files) if sort else audio_files
+    for f in files:
         stem = f.stem
         m = _TRACK_NUM_RE.match(stem)
         if m:

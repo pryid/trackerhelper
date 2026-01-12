@@ -25,7 +25,7 @@ import shutil
 import subprocess
 import sys
 import time
-from collections import Counter, defaultdict
+from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Optional, Tuple, List, Dict, Set
@@ -253,12 +253,15 @@ def run_dedupe(args: argparse.Namespace) -> int:
     releases = sorted(release_keys.keys())
     sizes = {r: len(release_keys[r]) for r in releases}
 
-    # How many times each track appears
-    track_counts = Counter()
+    track_to_releases: Dict[TrackKey, Set[str]] = defaultdict(set)
     for r in releases:
-        track_counts.update(release_keys[r])
+        for k in release_keys[r]:
+            track_to_releases[k].add(r)
 
-    unique_count = {r: sum(1 for k in release_keys[r] if track_counts[k] == 1) for r in releases}
+    unique_count = {
+        r: sum(1 for k in release_keys[r] if len(track_to_releases[k]) == 1)
+        for r in releases
+    }
 
     # 1) exact duplicates (same set)
     by_set: Dict[frozenset, List[str]] = defaultdict(list)
@@ -288,10 +291,10 @@ def run_dedupe(args: argparse.Namespace) -> int:
         A = release_keys[a]
         if not A:
             continue
+        rare_track = min(A, key=lambda k: len(track_to_releases[k]))
+        candidates = track_to_releases[rare_track] - {a}
         best = None
-        for b in releases:
-            if b == a:
-                continue
+        for b in candidates:
             B = release_keys[b]
             if len(B) < len(A):
                 continue
@@ -300,7 +303,7 @@ def run_dedupe(args: argparse.Namespace) -> int:
                     best = b
                 else:
                     # Choose the smallest container, then prefer "best to keep"
-                    if (len(B), -score_release(b), b) < (len(release_keys[best]), -score_release(best), best):
+                    if (sizes[b], -score_release(b), b) < (sizes[best], -score_release(best), best):
                         best = b
         if best is not None and best != a:
             contained_in[a] = best

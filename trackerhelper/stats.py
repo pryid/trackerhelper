@@ -25,12 +25,13 @@ def iter_release_audio_files(root: Path, exts: set[str], include_root: bool) -> 
 
         audio_files: list[Path] = []
         for fn in filenames:
-            p = folder / fn
-            if p.is_file() and p.suffix.lower() in exts:
-                audio_files.append(p)
+            suffix = Path(fn).suffix.lower()
+            if suffix in exts:
+                audio_files.append(folder / fn)
 
         if audio_files:
-            yield folder, sorted(audio_files)
+            audio_files.sort()
+            yield folder, audio_files
 
 
 def collect_real_stats(
@@ -70,13 +71,9 @@ def collect_real_stats(
 
             if sr is not None:
                 sr_set.add(sr)
-                summary.total_sr.add(sr)
             if bit is not None:
                 bit_set.add(bit)
-                summary.total_bit.add(bit)
-
             ext_set.add(f.suffix.lower())
-            summary.total_exts.add(f.suffix.lower())
 
         if folder_tracks > 0:
             releases.append(
@@ -93,6 +90,9 @@ def collect_real_stats(
 
             summary.total_seconds += folder_sum
             summary.total_tracks += folder_tracks
+            summary.total_sr.update(sr_set)
+            summary.total_bit.update(bit_set)
+            summary.total_exts.update(ext_set)
 
             rel = folder.relative_to(root)
             summary.all_years.extend(extract_years_from_text(rel.as_posix()))
