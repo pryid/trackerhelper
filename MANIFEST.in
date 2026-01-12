@@ -1,0 +1,4 @@
+prune tests
+prune .github
+prune dist
+prune __pycache__
