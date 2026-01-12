@@ -12,6 +12,12 @@ Project docs:
 - `docs/DATA_FLOW.md`
 - `docs/CONTRIBUTING.md`
 
+Code layout (developer notes):
+- `trackerhelper/commands/` CLI command wiring
+- `trackerhelper/core/` core logic and dataclasses
+- `trackerhelper/io/` filesystem + external tool helpers
+- `trackerhelper/formatting/` BBCode and output formatting
+
 ## Requirements
 
 ### `dr.ps1` (Windows)
@@ -216,7 +222,7 @@ Options:
 - `--move-to DIR` move duplicate releases to a folder
 - `--delete` delete duplicate releases (dangerous)
 
-`--test` uses synthetic data from `trackerhelper/synthetic_dataset.py` and lets you check formatting without real files or ffprobe.
+`--test` uses synthetic data from `trackerhelper/core/synthetic_dataset.py` and lets you check formatting without real files or ffprobe.
 
 ## Troubleshooting
 

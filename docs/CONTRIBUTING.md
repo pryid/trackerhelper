@@ -6,7 +6,7 @@ Thanks for contributing!
 1. Create a virtualenv and install dev tools:
    `pip install -e .[dev]`
 2. Run tests:
-   `python -m unittest`
+   `python -m unittest discover -s tests`
 3. Run lint/type checks:
    `ruff check .`
    `ty check .`

@@ -4,7 +4,17 @@
 
 - **`dr.ps1`** — автоматизирует запуск **foobar2000** и измерение **Dynamic Range (DR)** для каждого релиза, сохраняя DR-логи в отдельную папку.
 - **`trackerhelper`** — CLI-утилита для сканирования дискографии, подсчёта длительности и генерации BBCode-шаблонов; умеет подхватывать DR-отчёты `*_dr.txt` и (опционально) загружать `cover.jpg` на FastPic.
-- **`synthetic_dataset.py`** — фикстуры для режима `--test` (проверка форматирования без реальных файлов и ffprobe).
+
+Документы для разработчиков:
+- `docs/ARCHITECTURE.md`
+- `docs/DATA_FLOW.md`
+- `docs/CONTRIBUTING.md`
+
+Структура кода:
+- `trackerhelper/commands/` — CLI-обвязка команд
+- `trackerhelper/core/` — ядро логики и датаклассы
+- `trackerhelper/io/` — файловая система и внешние инструменты
+- `trackerhelper/formatting/` — форматирование BBCode и вывода
 
 ## Требования
 
@@ -213,7 +223,7 @@ trackerhelper dedupe --roots Albums Singles
 - `--move-to DIR` — переместить найденные релизы в указанную папку
 - `--delete` — удалить найденные релизы (опасно)
 
-`--test` использует данные из `synthetic_dataset.py` и позволяет быстро проверить, как выглядит консольный вывод и BBCode, не имея реальных файлов.
+`--test` использует данные из `trackerhelper/core/synthetic_dataset.py` и позволяет быстро проверить, как выглядит консольный вывод и BBCode, не имея реальных файлов.
 
 ## Troubleshooting
 
