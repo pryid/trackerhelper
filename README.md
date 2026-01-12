@@ -186,7 +186,7 @@ Output file is written to the current working directory as:
 - `<root_folder_name>.txt`
 
 The template keeps placeholders like `ROOT_COVER_URL`, `GENRE`, `Service`, `YEAR`.
-Russian output uses the Cyrillic label placeholder (`\\u041b\\u0415\\u0419\\u0411\\u041b`), English output uses `LABEL`.
+Russian output uses `ЛЕЙБЛ` for the label placeholder, English output uses `LABEL`.
 
 ### Add DR reports to BBCode
 If you already have `*_dr.txt` (for example from `dr.ps1`), pass the log directory:
