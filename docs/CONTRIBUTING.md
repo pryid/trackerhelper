@@ -1,0 +1,23 @@
+# Contributing
+
+Thanks for contributing!
+
+## Quick start
+1. Create a virtualenv and install dev tools:
+   `pip install -e .[dev]`
+2. Run tests:
+   `python -m unittest`
+3. Run lint/type checks:
+   `ruff check .`
+   `ty check .`
+
+## Project layout
+- `trackerhelper/commands/` for CLI commands.
+- `trackerhelper/core/` for business logic and dataclasses.
+- `trackerhelper/io/` for filesystem and external tools.
+- `trackerhelper/formatting/` for BBCode and output helpers.
+
+## Style notes
+- Prefer small helpers with clear names over inline lambdas.
+- Keep file operations OS-agnostic (Path over hard-coded separators).
+- Update `README.md` when behavior or flags change.

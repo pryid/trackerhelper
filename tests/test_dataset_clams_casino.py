@@ -2,9 +2,9 @@ import json
 import unittest
 from pathlib import Path
 
-from trackerhelper.ffprobe_utils import TagsReader
-from trackerhelper.tags import release_metadata_from_tags
-from trackerhelper.utils import parse_release_title_and_year
+from trackerhelper.io.ffprobe_utils import TagsReader
+from trackerhelper.core.tags import release_metadata_from_tags
+from trackerhelper.core.utils import parse_release_title_and_year
 
 DATA_PATH = Path(__file__).resolve().parent / "fixtures" / "clams_casino_dataset.json"
 

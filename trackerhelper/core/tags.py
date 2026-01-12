@@ -4,11 +4,12 @@ from collections import Counter
 from pathlib import Path
 
 from .constants import TAG_KEYS_ALBUM, TAG_KEYS_ALBUM_ARTIST, TAG_KEYS_ARTIST
-from .ffprobe_utils import TagsReader
+from ..io.ffprobe_utils import TagsReader
 from .utils import clean_name_part
 
 
 def tag_value(tags: dict[str, str], keys: list[str]) -> str | None:
+    """Return the first tag value that exists for a list of keys."""
     for k in keys:
         v = tags.get(k)
         if v:
@@ -17,11 +18,13 @@ def tag_value(tags: dict[str, str], keys: list[str]) -> str | None:
 
 
 def count_sort_key(item: tuple[str, int]) -> tuple[int, int, str]:
+    """Sort key for tag frequency with a stable fallback."""
     val, count = item
     return (count, -len(val), val.lower())
 
 
 def most_common_str(values: list[str]) -> str | None:
+    """Return the most common string (ties prefer longer, then alpha)."""
     if not values:
         return None
     counts = Counter(values)
@@ -32,6 +35,7 @@ def release_metadata_from_tags(
     audio_files: list[Path],
     ffprobe: TagsReader,
 ) -> tuple[str | None, str | None]:
+    """Return (artist, album) picked from the most common tag values."""
     album_values: list[str] = []
     album_artist_values: list[str] = []
     artist_values: list[str] = []

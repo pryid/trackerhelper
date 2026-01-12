@@ -1,18 +1,20 @@
 from __future__ import annotations
 
+import logging
 import re
-import sys
 from pathlib import Path
 
-from .ffprobe_utils import FfprobeClient
-from .stats import iter_release_audio_files
+from ..io.ffprobe_utils import FfprobeClient
+from ..io.scan import ReleaseScan, iter_release_audio_files
 from .tags import release_metadata_from_tags
 from .utils import clean_name_part
 
 _YEAR_RE = re.compile(r"\b(19\d{2}|20\d{2})\b")
+logger = logging.getLogger(__name__)
 
 
 def parse_year_from_folder_name(name: str) -> int | None:
+    """Extract the last 4-digit year from a folder name."""
     years = [int(m.group(1)) for m in _YEAR_RE.finditer(name)]
     return years[-1] if years else None
 
@@ -23,6 +25,7 @@ def build_normalized_name(
     year: int | None,
     single_mode: bool,
 ) -> str | None:
+    """Build the normalized release folder name or return None if data is missing."""
     if not artist or not album or year is None:
         return None
     if single_mode:
@@ -30,16 +33,15 @@ def build_normalized_name(
     return clean_name_part(f"{year} - {artist} - {album}")
 
 
-def release_data_sort_key(item: tuple[Path, list[Path]]) -> str:
-    return item[0].as_posix().lower()
+def release_data_sort_key(item: ReleaseScan) -> str:
+    """Sort key for release data by full path."""
+    return item.path.as_posix().lower()
 
 
 def normalize_release_folders(root: Path, exts: set[str], apply: bool) -> int:
+    """Print or apply rename actions for release folders."""
     ffprobe = FfprobeClient()
-    release_data = [
-        (folder, files)
-        for folder, files in iter_release_audio_files(root, exts, include_root=True)
-    ]
+    release_data = list(iter_release_audio_files(root, exts, include_root=True))
     release_data.sort(key=release_data_sort_key)
 
     if not release_data:
@@ -48,10 +50,10 @@ def normalize_release_folders(root: Path, exts: set[str], apply: bool) -> int:
 
     single_mode = len(release_data) == 1
     if not single_mode:
-        release_data = [(f, files) for f, files in release_data if f != root]
+        release_data = [item for item in release_data if item.path != root]
         if not release_data:
             single_mode = True
-            release_data = [(root, [])]
+            release_data = [ReleaseScan(path=root, audio_files=[])]
 
     actions: list[tuple[Path, Path]] = []
     planned_targets: set[Path] = set()
@@ -65,16 +67,14 @@ def normalize_release_folders(root: Path, exts: set[str], apply: bool) -> int:
             return p.as_posix()
         return p.name if str(rel) == "." else rel.as_posix()
 
-    for folder, files in release_data:
-        artist, album = release_metadata_from_tags(files, ffprobe)
+    for item in release_data:
+        folder = item.path
+        artist, album = release_metadata_from_tags(item.audio_files, ffprobe)
         year = parse_year_from_folder_name(folder.name)
         new_name = build_normalized_name(artist, album, year, single_mode)
 
         if not new_name:
-            print(
-                f"Skip: can't normalize '{folder.name}' (missing tags/year).",
-                file=sys.stderr,
-            )
+            logger.warning("Skip: can't normalize '%s' (missing tags/year).", folder.name)
             continue
 
         target = folder.with_name(new_name)
@@ -82,11 +82,11 @@ def normalize_release_folders(root: Path, exts: set[str], apply: bool) -> int:
             continue
 
         if target in planned_targets:
-            print(f"Skip: duplicate target '{target.name}'.", file=sys.stderr)
+            logger.warning("Skip: duplicate target '%s'.", target.name)
             continue
 
         if target.exists() and target != folder:
-            print(f"Skip: target exists '{target}'.", file=sys.stderr)
+            logger.warning("Skip: target exists '%s'.", target)
             continue
 
         planned_targets.add(target)

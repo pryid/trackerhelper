@@ -8,10 +8,12 @@ from typing import Protocol
 
 
 def normalize_tag_key(s: str) -> str:
+    """Normalize tag keys to a lower_snake_case style."""
     return "_".join(s.strip().lower().split())
 
 
 def parse_audio_info(data: dict) -> tuple[float | None, int | None, int | None]:
+    """Parse duration/sample rate/bit depth from ffprobe JSON."""
     dur = None
     fmt = data.get("format", {}) or {}
     if "duration" in fmt:
@@ -44,6 +46,7 @@ def parse_audio_info(data: dict) -> tuple[float | None, int | None, int | None]:
 
 
 def parse_tags(data: dict) -> dict[str, str]:
+    """Parse tags from ffprobe JSON into a normalized dict."""
     tags_raw = (data.get("format") or {}).get("tags") or {}
     tags: dict[str, str] = {}
     for k, v in tags_raw.items():

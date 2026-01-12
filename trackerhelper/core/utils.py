@@ -13,6 +13,7 @@ def which(cmd: str) -> str | None:
 
 
 def clean_name_part(s: str) -> str:
+    """Normalize whitespace and dashes for folder naming."""
     s = s.replace("\u2013", "-").replace("\u2014", "-")
     s = re.sub(r"\s+", " ", s)
     return s.strip()
@@ -36,14 +37,17 @@ def format_khz(sr_hz: int) -> str:
 
 
 def track_word(n: int) -> str:
+    """Return a singular/plural label for track count."""
     return "track" if n == 1 else "tracks"
 
 
 def release_word(n: int) -> str:
+    """Return a singular/plural label for release count."""
     return "release" if n == 1 else "releases"
 
 
 def sr_label(srset: set[int]) -> str:
+    """Return a sample rate label for output."""
     if len(srset) == 1:
         return f"{format_khz(next(iter(srset)))} khz"
     if len(srset) > 1:
@@ -52,6 +56,7 @@ def sr_label(srset: set[int]) -> str:
 
 
 def bit_label(bitset: set[int]) -> str:
+    """Return a bit depth label for output."""
     if len(bitset) == 1:
         return f"{next(iter(bitset))} bit"
     if len(bitset) > 1:
@@ -60,6 +65,7 @@ def bit_label(bitset: set[int]) -> str:
 
 
 def codec_label(exts: set[str]) -> str:
+    """Return a codec label based on extensions."""
     if len(exts) == 1:
         e = next(iter(exts))
         return f"{e.lstrip('.').upper()} (*{e})"

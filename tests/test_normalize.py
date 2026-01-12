@@ -1,6 +1,6 @@
 import unittest
 
-from trackerhelper.normalize import build_normalized_name, parse_year_from_folder_name
+from trackerhelper.core.normalize import build_normalized_name, parse_year_from_folder_name
 
 
 class NormalizeTests(unittest.TestCase):

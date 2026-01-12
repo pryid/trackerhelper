@@ -1,8 +1,8 @@
 import unittest
 from pathlib import Path
 
-from trackerhelper.ffprobe_utils import TagsReader
-from trackerhelper.tags import release_metadata_from_tags
+from trackerhelper.io.ffprobe_utils import TagsReader
+from trackerhelper.core.tags import release_metadata_from_tags
 
 
 class DummyFfprobe(TagsReader):

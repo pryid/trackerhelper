@@ -7,6 +7,11 @@ Utilities for music discography folders (for example, `Albums/*` and `Singles/*`
 - `dr.ps1` automates foobar2000 Dynamic Range (DR) scans and saves logs per release.
 - `trackerhelper` is a CLI that scans releases, summarizes durations, and generates BBCode templates. It can match `*_dr.txt` logs and optionally upload `cover.jpg` to FastPic.
 
+Project docs:
+- `docs/ARCHITECTURE.md`
+- `docs/DATA_FLOW.md`
+- `docs/CONTRIBUTING.md`
+
 ## Requirements
 
 ### `dr.ps1` (Windows)
@@ -71,6 +76,8 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
 ## Usage
+
+More examples: `examples/README.md`.
 
 ## 1) DR logs via foobar2000 (`dr.ps1`)
 

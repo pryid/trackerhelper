@@ -1,37 +1,14 @@
 from __future__ import annotations
 
-import os
-import sys
+import logging
 from pathlib import Path
-from typing import Iterable
 
-from .ffprobe_utils import FfprobeClient
-from .models import ReleaseStats, StatsSummary
+from ..io.ffprobe_utils import FfprobeClient
+from .models import Release, StatsSummary, Track
+from ..io.scan import iter_release_audio_files
 from .utils import extract_years_from_text
 
-
-def iter_release_audio_files(root: Path, exts: set[str], include_root: bool) -> Iterable[tuple[Path, list[Path]]]:
-    """
-    Iterate folders and return audio files inside each folder.
-
-    Note:
-    - In the release command, the tracklist is built from the files found in the folder,
-      even if ffprobe could not read duration for some files (matches original behavior).
-    """
-    for dirpath, _, filenames in os.walk(root):
-        folder = Path(dirpath)
-        if folder == root and not include_root:
-            continue
-
-        audio_files: list[Path] = []
-        for fn in filenames:
-            suffix = Path(fn).suffix.lower()
-            if suffix in exts:
-                audio_files.append(folder / fn)
-
-        if audio_files:
-            audio_files.sort()
-            yield folder, audio_files
+logger = logging.getLogger(__name__)
 
 
 def collect_real_stats(
@@ -39,11 +16,11 @@ def collect_real_stats(
     exts: set[str],
     include_root: bool,
     ffprobe: FfprobeClient,
-) -> tuple[list[ReleaseStats], StatsSummary]:
+) -> tuple[list[Release], StatsSummary]:
     """
     Collect stats from the real filesystem plus ffprobe.
     """
-    releases: list[ReleaseStats] = []
+    releases: list[Release] = []
     summary = StatsSummary(
         total_seconds=0.0,
         total_tracks=0,
@@ -53,17 +30,28 @@ def collect_real_stats(
         all_years=[],
     )
 
-    for folder, audio_files in iter_release_audio_files(root, exts, include_root):
+    for scan in iter_release_audio_files(root, exts, include_root):
+        folder = scan.path
+        audio_files = scan.audio_files
         folder_sum = 0.0
         folder_tracks = 0
         sr_set: set[int] = set()
         bit_set: set[int] = set()
         ext_set: set[str] = set()
+        tracks: list[Track] = []
 
         for f in audio_files:
             dur, sr, bit = ffprobe.get_audio_info(f)
+            tracks.append(
+                Track(
+                    path=f,
+                    duration_seconds=dur,
+                    sample_rate=sr,
+                    bit_depth=bit,
+                )
+            )
             if dur is None:
-                print(f"Warning: can't read duration: {f}", file=sys.stderr)
+                logger.warning("Warning: can't read duration: %s", f)
                 continue
 
             folder_sum += dur
@@ -77,14 +65,14 @@ def collect_real_stats(
 
         if folder_tracks > 0:
             releases.append(
-                ReleaseStats(
+                Release(
                     path=folder,
                     duration_seconds=folder_sum,
                     track_count=folder_tracks,
                     sample_rates=sr_set,
                     bit_depths=bit_set,
                     exts=ext_set,
-                    audio_files=audio_files,
+                    tracks=tracks,
                 )
             )
 
@@ -100,14 +88,14 @@ def collect_real_stats(
     return releases, summary
 
 
-def collect_synthetic_stats(root: Path) -> tuple[list[ReleaseStats], StatsSummary]:
+def collect_synthetic_stats(root: Path) -> tuple[list[Release], StatsSummary]:
     """
     Synthetic dataset to test formatting without ffprobe or filesystem access.
     Data lives in synthetic_dataset.py.
     """
     from .synthetic_dataset import load_synthetic_cases, make_track_paths
 
-    releases: list[ReleaseStats] = []
+    releases: list[Release] = []
     summary = StatsSummary(
         total_seconds=0.0,
         total_tracks=0,
@@ -129,16 +117,17 @@ def collect_synthetic_stats(root: Path) -> tuple[list[ReleaseStats], StatsSummar
 
         folder = root / g / folder_name
         audio_files = make_track_paths(folder, ext, track_titles)
+        tracks = [Track(path=p) for p in audio_files]
 
         releases.append(
-            ReleaseStats(
+            Release(
                 path=folder,
                 duration_seconds=secs,
                 track_count=len(audio_files),
                 sample_rates={sr},
                 bit_depths={bit},
                 exts={ext},
-                audio_files=audio_files,
+                tracks=tracks,
                 dr_text=dr_text,
             )
         )
