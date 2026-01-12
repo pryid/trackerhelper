@@ -54,14 +54,19 @@ DiscographyRoot/
 ## Установка
 
 ```bash
-git clone https://github.com/pryid/trackerhelper
-cd trackerhelper
-pip install .
+pip install trackerhelper
 ```
 
 Опционально, для загрузки обложек:
 ```bash
-pip install .[cover]
+pip install trackerhelper[cover]
+```
+
+Разработка из репозитория:
+```bash
+git clone https://github.com/pryid/trackerhelper
+cd trackerhelper
+pip install -e .
 ```
 
 На Windows, если PowerShell запрещает запуск скриптов, можно разрешить для текущего пользователя:
