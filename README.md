@@ -141,6 +141,25 @@ python main.py "/path/to/DiscographyRoot" --flat
 python main.py "/path/to/DiscographyRoot" --ext .ape --ext .tak
 ```
 
+### Нормализация имён папок релизов
+По умолчанию выполняется "сухой" прогон (без переименований):
+
+```bash
+python main.py "/path/to/DiscographyRoot" --normalize
+```
+
+Чтобы применить изменения:
+
+```bash
+python main.py "/path/to/DiscographyRoot" --normalize --y
+```
+
+Форматы:
+- один релиз: `Artist - Album (Year)`
+- несколько релизов: `Year - Artist - Album`
+
+Важно: при `--normalize` данные берутся из **тегов аудиофайлов** (album/artist), а год — из имени папки. Если теги/год отсутствуют, папка будет пропущена.
+
 ### Генерация BBCode-шаблона дискографии
 ```bash
 python main.py "/path/to/DiscographyRoot" --release

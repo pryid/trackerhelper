@@ -238,6 +238,176 @@ def extract_years_from_text(s: str) -> list[int]:
     """Находим годы в любом тексте (используется для year_range по структуре папок)."""
     return [int(y) for y in re.findall(r"\b(19\d{2}|20\d{2})\b", s)]
 
+_YEAR_RE = re.compile(r"\b(19\d{2}|20\d{2})\b")
+
+def clean_name_part(s: str) -> str:
+    s = s.replace("–", "-").replace("—", "-")
+    s = re.sub(r"\s+", " ", s)
+    return s.strip()
+
+def normalize_tag_key(s: str) -> str:
+    return re.sub(r"\s+", "_", s.strip().lower())
+
+def ffprobe_tags(file_path: Path) -> dict[str, str]:
+    try:
+        proc = subprocess.run(
+            [
+                "ffprobe",
+                "-v", "error",
+                "-show_entries", "format_tags",
+                "-of", "json",
+                str(file_path),
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        if proc.returncode != 0 or not proc.stdout.strip():
+            return {}
+
+        data = json.loads(proc.stdout)
+        tags_raw = (data.get("format") or {}).get("tags") or {}
+        tags: dict[str, str] = {}
+        for k, v in tags_raw.items():
+            if v is None:
+                continue
+            key = normalize_tag_key(str(k))
+            val = str(v).strip()
+            if key and val:
+                tags[key] = val
+        return tags
+    except Exception:
+        return {}
+
+def tag_value(tags: dict[str, str], keys: list[str]) -> str | None:
+    for k in keys:
+        v = tags.get(k)
+        if v:
+            return v.strip()
+    return None
+
+def most_common_str(values: list[str]) -> str | None:
+    if not values:
+        return None
+    counts: dict[str, int] = {}
+    for v in values:
+        counts[v] = counts.get(v, 0) + 1
+    return max(counts.items(), key=lambda x: (x[1], -len(x[0]), x[0].lower()))[0]
+
+def parse_year_from_folder_name(name: str) -> int | None:
+    years = [int(m.group(1)) for m in _YEAR_RE.finditer(name)]
+    return years[-1] if years else None
+
+def release_metadata_from_tags(audio_files: list[Path]) -> tuple[str | None, str | None]:
+    album_values: list[str] = []
+    album_artist_values: list[str] = []
+    artist_values: list[str] = []
+
+    for f in audio_files:
+        tags = ffprobe_tags(f)
+        if not tags:
+            continue
+
+        album = tag_value(tags, ["album"])
+        if album:
+            album_values.append(clean_name_part(album))
+
+        album_artist = tag_value(tags, ["album_artist", "albumartist"])
+        if album_artist:
+            album_artist_values.append(clean_name_part(album_artist))
+
+        artist = tag_value(tags, ["artist", "performer"])
+        if artist:
+            artist_values.append(clean_name_part(artist))
+
+    album = most_common_str(album_values)
+    artist = most_common_str(album_artist_values) or most_common_str(artist_values)
+    return artist, album
+
+def normalize_release_folders(root: Path, exts: set[str], apply: bool) -> int:
+    release_data = [
+        (folder, files)
+        for folder, files in iter_release_audio_files(root, exts, include_root=True)
+    ]
+    release_data.sort(key=lambda x: x[0].as_posix().lower())
+
+    if not release_data:
+        print("No audio files found for normalization.")
+        return 0
+
+    single_mode = len(release_data) == 1
+    if not single_mode:
+        release_data = [(f, files) for f, files in release_data if f != root]
+        if not release_data:
+            single_mode = True
+            release_data = [(root, [])]
+
+    actions: list[tuple[Path, Path]] = []
+    planned_targets: set[Path] = set()
+    def display_path(p: Path) -> str:
+        if p == root or p.parent == root.parent:
+            return p.name
+        try:
+            rel = p.relative_to(root)
+        except ValueError:
+            return p.as_posix()
+        return p.name if str(rel) == "." else rel.as_posix()
+
+    for folder, files in release_data:
+        artist, album = release_metadata_from_tags(files)
+        year = parse_year_from_folder_name(folder.name)
+
+        if single_mode:
+            if year is None or not artist or not album:
+                print(
+                    f"Skip: can't normalize '{folder.name}' (missing tags/year).",
+                    file=sys.stderr,
+                )
+                continue
+
+            new_name = f"{artist} - {album} ({year})"
+            new_name = clean_name_part(new_name)
+        else:
+            if year is None or not artist or not album:
+                print(
+                    f"Skip: can't normalize '{folder.name}' (missing tags/year).",
+                    file=sys.stderr,
+                )
+                continue
+            new_name = f"{year} - {artist} - {album}"
+            new_name = clean_name_part(new_name)
+
+        target = folder.with_name(new_name)
+        if target == folder:
+            continue
+
+        if target in planned_targets:
+            print(f"Skip: duplicate target '{target.name}'.", file=sys.stderr)
+            continue
+
+        if target.exists() and target != folder:
+            print(f"Skip: target exists '{target}'.", file=sys.stderr)
+            continue
+
+        planned_targets.add(target)
+        actions.append((folder, target))
+
+    if not actions:
+        print("Nothing to normalize.")
+        return 0
+
+    if not apply:
+        print("Dry run (use --normalize --y to apply):")
+        for src, dst in actions:
+            print(f"  {display_path(src)} -> {display_path(dst)}")
+        return len(actions)
+
+    for src, dst in actions:
+        src.rename(dst)
+        print(f"Renamed: {display_path(src)} -> {display_path(dst)}")
+
+    return len(actions)
+
 # ----------------------------
 # Работа с ffprobe
 # ----------------------------
@@ -732,6 +902,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
     ap.add_argument("--release", action="store_true", help="Write BBCode release template to /tmp/<root_folder_name>.")
     ap.add_argument("--dr", default=None, help="Directory with DR reports (e.g. *_dr.txt). Use with --release.")
     ap.add_argument("--test", action="store_true", help="Generate fake data (no ffprobe/files needed) to test output formatting.")
+    ap.add_argument("--normalize", action="store_true", help="Normalize release folder names (dry run by default).")
+    ap.add_argument("--y", action="store_true", help="Apply rename changes for --normalize.")
     return ap
 
 def normalize_exts(user_exts: list[str]) -> set[str]:
@@ -756,6 +928,21 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Error: '{root}' is not a directory.", file=sys.stderr)
             return 2
 
+    if args.normalize:
+        if args.test:
+            print("Error: --normalize can't be used with --test.", file=sys.stderr)
+            return 2
+        if which("ffprobe") is None:
+            print("Error: ffprobe not found. Install ffmpeg (ffprobe) and retry.", file=sys.stderr)
+            return 3
+        exts = normalize_exts(args.ext)
+        normalize_release_folders(root, exts, apply=args.y)
+        return 0
+
+    if args.y:
+        print("Warning: --y has effect only with --normalize.", file=sys.stderr)
+
+    if not args.test:
         if which("ffprobe") is None:
             print("Error: ffprobe not found. Install ffmpeg (ffprobe) and retry.", file=sys.stderr)
             return 3
