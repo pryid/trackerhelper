@@ -93,7 +93,15 @@ def parse_release_title_and_year(folder_name: str) -> tuple[str, int | None]:
     """
     m = re.match(r"^(.*?)(?:\s*[-\u2013]\s*)(\d{4})\s*$", folder_name)
     if not m:
-        return folder_name, None
+        m = re.match(r"^(\d{4})(?:\s*[-\u2013]\s*)(.*)$", folder_name)
+        if not m:
+            return folder_name, None
+        try:
+            year = int(m.group(1))
+        except ValueError:
+            year = None
+        title = m.group(2).strip()
+        return (title if title else folder_name, year)
     title = m.group(1).strip()
     try:
         year = int(m.group(2))

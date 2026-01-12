@@ -1,0 +1,1365 @@
+{
+  "root_name": "Clams Casino",
+  "releases": [
+    {
+      "rel_path": "Albums/Clams Casino - 32 Levels (Deluxe) - 2016",
+      "tracks": [
+        {
+          "rel_path": "01 - Clams Casino - Level 1.flac",
+          "tags": {
+            "title": "Level 1",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "1",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11601829"
+          }
+        },
+        {
+          "rel_path": "02 - Clams Casino - Be Somebody (feat. A$AP Rocky & Lil B).flac",
+          "tags": {
+            "title": "Be Somebody (feat. A$AP Rocky & Lil B)",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "2",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11601830"
+          }
+        },
+        {
+          "rel_path": "03 - Clams Casino - All Nite (feat. Vince Staples).flac",
+          "tags": {
+            "title": "All Nite (feat. Vince Staples)",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "3",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11601831"
+          }
+        },
+        {
+          "rel_path": "04 - Clams Casino - Witness (feat. Lil B).flac",
+          "tags": {
+            "title": "Witness (feat. Lil B)",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "4",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11601832"
+          }
+        },
+        {
+          "rel_path": "05 - Clams Casino - Skull.flac",
+          "tags": {
+            "title": "Skull",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "5",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11601833"
+          }
+        },
+        {
+          "rel_path": "06 - Clams Casino - 32 Levels (feat. Lil B & Joe Newman).flac",
+          "tags": {
+            "title": "32 Levels (feat. Lil B & Joe Newman)",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "6",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11601834"
+          }
+        },
+        {
+          "rel_path": "07 - Clams Casino - Thanks to You (feat. Sam Dew).flac",
+          "tags": {
+            "title": "Thanks to You (feat. Sam Dew)",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "7",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11601835"
+          }
+        },
+        {
+          "rel_path": "08 - Clams Casino - Back to You (feat. Kelly Zutrau).flac",
+          "tags": {
+            "title": "Back to You (feat. Kelly Zutrau)",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "8",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11601836"
+          }
+        },
+        {
+          "rel_path": "09 - Clams Casino - Into the Fire (feat. Mikky Ekko).flac",
+          "tags": {
+            "title": "Into the Fire (feat. Mikky Ekko)",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "9",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11601837"
+          }
+        },
+        {
+          "rel_path": "10 - Clams Casino - A Breath Away (feat. Kelela).flac",
+          "tags": {
+            "title": "A Breath Away (feat. Kelela)",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "10",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11601838"
+          }
+        },
+        {
+          "rel_path": "11 - Clams Casino - Ghost in a Kiss (feat. Samuel T. Herring).flac",
+          "tags": {
+            "title": "Ghost in a Kiss (feat. Samuel T. Herring)",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "11",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11601839"
+          }
+        },
+        {
+          "rel_path": "12 - Clams Casino - Blast.flac",
+          "tags": {
+            "title": "Blast",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "12",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11601840"
+          }
+        },
+        {
+          "rel_path": "13 - Clams Casino - Level 1 (Instrumental).flac",
+          "tags": {
+            "title": "Level 1",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "13",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11602424"
+          }
+        },
+        {
+          "rel_path": "14 - Clams Casino - Be Somebody (Instrumental).flac",
+          "tags": {
+            "title": "Be Somebody",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "14",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11602425"
+          }
+        },
+        {
+          "rel_path": "15 - Clams Casino - All Nite (Instrumental).flac",
+          "tags": {
+            "title": "All Nite",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "15",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11602426"
+          }
+        },
+        {
+          "rel_path": "16 - Clams Casino - Witness (Instrumental).flac",
+          "tags": {
+            "title": "Witness",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "16",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11602427"
+          }
+        },
+        {
+          "rel_path": "17 - Clams Casino - Skull (Instrumental).flac",
+          "tags": {
+            "title": "Skull",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "17",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11602428"
+          }
+        },
+        {
+          "rel_path": "18 - Clams Casino - 32 Levels (Instrumental).flac",
+          "tags": {
+            "title": "32 Levels",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "18",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11602429"
+          }
+        },
+        {
+          "rel_path": "19 - Clams Casino - Thanks to You (Instrumental).flac",
+          "tags": {
+            "title": "Thanks to You",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "19",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11602430"
+          }
+        },
+        {
+          "rel_path": "20 - Clams Casino - Back to You (Instrumental).flac",
+          "tags": {
+            "title": "Back to You",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "20",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11602431"
+          }
+        },
+        {
+          "rel_path": "21 - Clams Casino - Into the Fire (Instrumental).flac",
+          "tags": {
+            "title": "Into the Fire",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "21",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11602432"
+          }
+        },
+        {
+          "rel_path": "22 - Clams Casino - A Breath Away (Instrumental).flac",
+          "tags": {
+            "title": "A Breath Away",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "22",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11602433"
+          }
+        },
+        {
+          "rel_path": "23 - Clams Casino - Ghost in a Kiss (Instrumental).flac",
+          "tags": {
+            "title": "Ghost in a Kiss",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "23",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11602434"
+          }
+        },
+        {
+          "rel_path": "24 - Clams Casino - Blast (Instrumental).flac",
+          "tags": {
+            "title": "Blast",
+            "artist": "Clams Casino",
+            "album": "32 Levels (Deluxe)",
+            "track": "24",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11602435"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Albums/Clams Casino - Instrumental Mixtape 4 Sampler - 2017",
+      "tracks": [
+        {
+          "rel_path": "01 - Clams Casino - Say Your Prayers.flac",
+          "tags": {
+            "title": "Say Your Prayers",
+            "artist": "Clams Casino",
+            "album": "Instrumental Mixtape 4 Sampler",
+            "track": "1",
+            "date": "2017",
+            "copyright": "2017 Clams Casino",
+            "isrc": "QM24S1702318"
+          }
+        },
+        {
+          "rel_path": "02 - Clams Casino - Wavey.flac",
+          "tags": {
+            "title": "Wavey",
+            "artist": "Clams Casino",
+            "album": "Instrumental Mixtape 4 Sampler",
+            "track": "2",
+            "date": "2017",
+            "copyright": "2017 Clams Casino",
+            "isrc": "QM24S1702319"
+          }
+        },
+        {
+          "rel_path": "05 - Clams Casino - Kali Yuga.flac",
+          "tags": {
+            "title": "Kali Yuga",
+            "artist": "Clams Casino",
+            "album": "Instrumental Mixtape 4 Sampler",
+            "track": "5",
+            "date": "2017",
+            "copyright": "2017 Clams Casino",
+            "isrc": "QM24S1702322"
+          }
+        },
+        {
+          "rel_path": "06 - Clams Casino - Talk It.flac",
+          "tags": {
+            "title": "Talk It",
+            "artist": "Clams Casino",
+            "album": "Instrumental Mixtape 4 Sampler",
+            "track": "6",
+            "date": "2017",
+            "copyright": "2017 Clams Casino",
+            "isrc": "QM24S1702323"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Albums/Clams Casino - Instrumental Relics - 2020",
+      "tracks": [
+        {
+          "rel_path": "01 - Clams Casino - I'm God.flac",
+          "tags": {
+            "title": "I'm God",
+            "artist": "Clams Casino",
+            "album": "Instrumental Relics",
+            "track": "1",
+            "date": "2020",
+            "copyright": "2020 Clams Casino Productions LLC",
+            "isrc": "QM24S2003584"
+          }
+        },
+        {
+          "rel_path": "02 - Clams Casino - I'm the Devil.flac",
+          "tags": {
+            "title": "I'm the Devil",
+            "artist": "Clams Casino",
+            "album": "Instrumental Relics",
+            "track": "2",
+            "date": "2020",
+            "copyright": "2020 Clams Casino Productions LLC",
+            "isrc": "QZFZ72062503"
+          }
+        },
+        {
+          "rel_path": "03 - Clams Casino - All I Need.flac",
+          "tags": {
+            "title": "All I Need",
+            "artist": "Clams Casino",
+            "album": "Instrumental Relics",
+            "track": "3",
+            "date": "2020",
+            "copyright": "2020 Clams Casino Productions LLC",
+            "isrc": "QM24S1800452"
+          }
+        },
+        {
+          "rel_path": "04 - Clams Casino - Swervin'.flac",
+          "tags": {
+            "title": "Swervin'",
+            "artist": "Clams Casino",
+            "album": "Instrumental Relics",
+            "track": "4",
+            "date": "2020",
+            "copyright": "2020 Clams Casino Productions LLC",
+            "isrc": "QZFZ62030092"
+          }
+        },
+        {
+          "rel_path": "05 - Clams Casino - Human.flac",
+          "tags": {
+            "title": "Human",
+            "artist": "Clams Casino",
+            "album": "Instrumental Relics",
+            "track": "5",
+            "date": "2020",
+            "copyright": "2020 Clams Casino Productions LLC",
+            "isrc": "QZFZ22054241"
+          }
+        },
+        {
+          "rel_path": "06 - Clams Casino - Motivation.flac",
+          "tags": {
+            "title": "Motivation",
+            "artist": "Clams Casino",
+            "album": "Instrumental Relics",
+            "track": "6",
+            "date": "2020",
+            "copyright": "2020 Clams Casino Productions LLC",
+            "isrc": "QM24S1800451"
+          }
+        },
+        {
+          "rel_path": "07 - Clams Casino - Caves.flac",
+          "tags": {
+            "title": "Caves",
+            "artist": "Clams Casino",
+            "album": "Instrumental Relics",
+            "track": "7",
+            "date": "2020",
+            "copyright": "2020 Clams Casino Productions LLC",
+            "isrc": "QZFZ42086160"
+          }
+        },
+        {
+          "rel_path": "08 - Clams Casino - Numb.flac",
+          "tags": {
+            "title": "Numb",
+            "artist": "Clams Casino",
+            "album": "Instrumental Relics",
+            "track": "8",
+            "date": "2020",
+            "copyright": "2020 Clams Casino Productions LLC",
+            "isrc": "QM24S1800455"
+          }
+        },
+        {
+          "rel_path": "09 - Clams Casino - Treetop.flac",
+          "tags": {
+            "title": "Treetop",
+            "artist": "Clams Casino",
+            "album": "Instrumental Relics",
+            "track": "9",
+            "date": "2020",
+            "copyright": "2020 Clams Casino Productions LLC",
+            "isrc": "GBCW31200032"
+          }
+        },
+        {
+          "rel_path": "10 - Clams Casino - Leaf.flac",
+          "tags": {
+            "title": "Leaf",
+            "artist": "Clams Casino",
+            "album": "Instrumental Relics",
+            "track": "10",
+            "date": "2020",
+            "copyright": "2020 Clams Casino Productions LLC",
+            "isrc": "QM24S2003933"
+          }
+        },
+        {
+          "rel_path": "11 - Clams Casino - Drowning.flac",
+          "tags": {
+            "title": "Drowning",
+            "artist": "Clams Casino",
+            "album": "Instrumental Relics",
+            "track": "11",
+            "date": "2020",
+            "copyright": "2020 Clams Casino Productions LLC",
+            "isrc": "GBCW31200034"
+          }
+        },
+        {
+          "rel_path": "12 - Clams Casino - Realist Alive.flac",
+          "tags": {
+            "title": "Realist Alive",
+            "artist": "Clams Casino",
+            "album": "Instrumental Relics",
+            "track": "12",
+            "date": "2020",
+            "copyright": "2020 Clams Casino Productions LLC",
+            "isrc": "QM24S1800454"
+          }
+        },
+        {
+          "rel_path": "13 - Clams Casino - Crystals.flac",
+          "tags": {
+            "title": "Crystals",
+            "artist": "Clams Casino",
+            "album": "Instrumental Relics",
+            "track": "13",
+            "date": "2020",
+            "copyright": "2020 Clams Casino Productions LLC",
+            "isrc": "QZFYY2079228"
+          }
+        },
+        {
+          "rel_path": "14 - Clams Casino - Gorilla.flac",
+          "tags": {
+            "title": "Gorilla",
+            "artist": "Clams Casino",
+            "album": "Instrumental Relics",
+            "track": "14",
+            "date": "2020",
+            "copyright": "2020 Clams Casino Productions LLC",
+            "isrc": "GBCW31200035"
+          }
+        },
+        {
+          "rel_path": "15 - Clams Casino - Unchain Me.flac",
+          "tags": {
+            "title": "Unchain Me",
+            "artist": "Clams Casino",
+            "album": "Instrumental Relics",
+            "track": "15",
+            "date": "2020",
+            "copyright": "2020 Clams Casino Productions LLC",
+            "isrc": "QM24S2003934"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Albums/Clams Casino - Instrumentals - 2011",
+      "tracks": [
+        {
+          "rel_path": "01 - Clams Casino - Motivation.flac",
+          "tags": {
+            "title": "Motivation",
+            "artist": "Clams Casino",
+            "album": "Instrumentals",
+            "track": "1",
+            "date": "2020",
+            "copyright": "2011 Clams Casino",
+            "isrc": "QM24S1800451"
+          }
+        },
+        {
+          "rel_path": "02 - Clams Casino - All I Need.flac",
+          "tags": {
+            "title": "All I Need",
+            "artist": "Clams Casino",
+            "album": "Instrumentals",
+            "track": "2",
+            "date": "2020",
+            "copyright": "2011 Clams Casino",
+            "isrc": "QM24S1800452"
+          }
+        },
+        {
+          "rel_path": "03 - Clams Casino - Real S___.flac",
+          "tags": {
+            "title": "Real S***",
+            "artist": "Clams Casino",
+            "album": "Instrumentals",
+            "track": "3",
+            "date": "2020",
+            "copyright": "2011 Clams Casino",
+            "isrc": "QM24S1800453"
+          }
+        },
+        {
+          "rel_path": "04 - Clams Casino - Realist Alive.flac",
+          "tags": {
+            "title": "Realist Alive",
+            "artist": "Clams Casino",
+            "album": "Instrumentals",
+            "track": "4",
+            "date": "2020",
+            "copyright": "2011 Clams Casino",
+            "isrc": "QM24S1800454"
+          }
+        },
+        {
+          "rel_path": "05 - Clams Casino - Numb.flac",
+          "tags": {
+            "title": "Numb",
+            "artist": "Clams Casino",
+            "album": "Instrumentals",
+            "track": "5",
+            "date": "2020",
+            "copyright": "2011 Clams Casino",
+            "isrc": "QM24S1800455"
+          }
+        },
+        {
+          "rel_path": "06 - Clams Casino - What You Doin.flac",
+          "tags": {
+            "title": "What You Doin",
+            "artist": "Clams Casino",
+            "album": "Instrumentals",
+            "track": "6",
+            "date": "2020",
+            "copyright": "2011 Clams Casino",
+            "isrc": "QM24S1800456"
+          }
+        },
+        {
+          "rel_path": "07 - Clams Casino - The World Needs Change.flac",
+          "tags": {
+            "title": "The World Needs Change",
+            "artist": "Clams Casino",
+            "album": "Instrumentals",
+            "track": "7",
+            "date": "2020",
+            "copyright": "2011 Clams Casino",
+            "isrc": "QM24S1800457"
+          }
+        },
+        {
+          "rel_path": "08 - Clams Casino - I'm Official.flac",
+          "tags": {
+            "title": "I'm Official",
+            "artist": "Clams Casino",
+            "album": "Instrumentals",
+            "track": "8",
+            "date": "2020",
+            "copyright": "2011 Clams Casino",
+            "isrc": "QM24S1800458"
+          }
+        },
+        {
+          "rel_path": "09 - Clams Casino - Brainwash by London.flac",
+          "tags": {
+            "title": "Brainwash by London",
+            "artist": "Clams Casino",
+            "album": "Instrumentals",
+            "track": "9",
+            "date": "2020",
+            "copyright": "2011 Clams Casino",
+            "isrc": "QM24S1800459"
+          }
+        },
+        {
+          "rel_path": "10 - Clams Casino - Illest Alive.flac",
+          "tags": {
+            "title": "Illest Alive",
+            "artist": "Clams Casino",
+            "album": "Instrumentals",
+            "track": "10",
+            "date": "2020",
+            "copyright": "2011 Clams Casino",
+            "isrc": "QM24S1800460"
+          }
+        },
+        {
+          "rel_path": "11 - Clams Casino - She's Hot.flac",
+          "tags": {
+            "title": "She's Hot",
+            "artist": "Clams Casino",
+            "album": "Instrumentals",
+            "track": "11",
+            "date": "2020",
+            "copyright": "2011 Clams Casino",
+            "isrc": "QM24S1800461"
+          }
+        },
+        {
+          "rel_path": "12 - Clams Casino - Cold War.flac",
+          "tags": {
+            "title": "Cold War",
+            "artist": "Clams Casino",
+            "album": "Instrumentals",
+            "track": "12",
+            "date": "2020",
+            "copyright": "2011 Clams Casino",
+            "isrc": "QM24S1800462"
+          }
+        },
+        {
+          "rel_path": "13 - Clams Casino - 13.flac",
+          "tags": {
+            "title": "13",
+            "artist": "Clams Casino",
+            "album": "Instrumentals",
+            "track": "13",
+            "date": "2020",
+            "copyright": "2011 Clams Casino",
+            "isrc": "QM24S1800463"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Albums/Clams Casino - Instrumentals 3 - 2011",
+      "tracks": [
+        {
+          "rel_path": "01 - Clams Casino - Crystals.flac",
+          "tags": {
+            "title": "Crystals",
+            "artist": "Clams Casino",
+            "album": "Instrumentals 3",
+            "track": "1",
+            "date": "2020",
+            "copyright": "2011 Clams Casino Productions LLC",
+            "isrc": "QZFYY2079228"
+          }
+        },
+        {
+          "rel_path": "02 - Clams Casino - Freeze.flac",
+          "tags": {
+            "title": "Freeze",
+            "artist": "Clams Casino",
+            "album": "Instrumentals 3",
+            "track": "2",
+            "date": "2020",
+            "copyright": "2011 Clams Casino Productions LLC",
+            "isrc": "QZK6P2044657"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Albums/Clams Casino - Moon Trip Radio - 2019",
+      "tracks": [
+        {
+          "rel_path": "01 - Clams Casino - Rune.flac",
+          "tags": {
+            "title": "Rune",
+            "artist": "Clams Casino",
+            "album": "Moon Trip Radio",
+            "track": "1",
+            "date": "2022",
+            "copyright": "(P) 2019 Clams Casino Productions LLC",
+            "isrc": "GBKPL1971955"
+          }
+        },
+        {
+          "rel_path": "02 - Clams Casino - Healing.flac",
+          "tags": {
+            "title": "Healing",
+            "artist": "Clams Casino",
+            "album": "Moon Trip Radio",
+            "track": "2",
+            "date": "2022",
+            "copyright": "(P) 2019 Clams Casino Productions LLC",
+            "isrc": "QM24S1839553"
+          }
+        },
+        {
+          "rel_path": "03 - Clams Casino - NSX.flac",
+          "tags": {
+            "title": "NSX",
+            "artist": "Clams Casino",
+            "album": "Moon Trip Radio",
+            "track": "3",
+            "date": "2022",
+            "copyright": "(P) 2019 Clams Casino Productions LLC",
+            "isrc": "GBKPL1971956"
+          }
+        },
+        {
+          "rel_path": "04 - Clams Casino - Cupidwing.flac",
+          "tags": {
+            "title": "Cupidwing",
+            "artist": "Clams Casino",
+            "album": "Moon Trip Radio",
+            "track": "4",
+            "date": "2022",
+            "copyright": "(P) 2019 Clams Casino Productions LLC",
+            "isrc": "GBKPL1971957"
+          }
+        },
+        {
+          "rel_path": "05 - Clams Casino - Glowing Bones.flac",
+          "tags": {
+            "title": "Glowing Bones",
+            "artist": "Clams Casino",
+            "album": "Moon Trip Radio",
+            "track": "5",
+            "date": "2022",
+            "copyright": "(P) 2019 Clams Casino Productions LLC",
+            "isrc": "GBKPL1971958"
+          }
+        },
+        {
+          "rel_path": "06 - Clams Casino - Fire Blue.flac",
+          "tags": {
+            "title": "Fire Blue",
+            "artist": "Clams Casino",
+            "album": "Moon Trip Radio",
+            "track": "6",
+            "date": "2022",
+            "copyright": "(P) 2019 Clams Casino Productions LLC",
+            "isrc": "GBKPL1971959"
+          }
+        },
+        {
+          "rel_path": "07 - Clams Casino - Twilit.flac",
+          "tags": {
+            "title": "Twilit",
+            "artist": "Clams Casino",
+            "album": "Moon Trip Radio",
+            "track": "7",
+            "date": "2022",
+            "copyright": "(P) 2019 Clams Casino Productions LLC",
+            "isrc": "GBKPL1971960"
+          }
+        },
+        {
+          "rel_path": "08 - Clams Casino - Lyre.flac",
+          "tags": {
+            "title": "Lyre",
+            "artist": "Clams Casino",
+            "album": "Moon Trip Radio",
+            "track": "8",
+            "date": "2022",
+            "copyright": "(P) 2019 Clams Casino Productions LLC",
+            "isrc": "GBKPL1971961"
+          }
+        },
+        {
+          "rel_path": "09 - Clams Casino - In a Mirror.flac",
+          "tags": {
+            "title": "In a Mirror",
+            "artist": "Clams Casino",
+            "album": "Moon Trip Radio",
+            "track": "9",
+            "date": "2022",
+            "copyright": "(P) 2019 Clams Casino Productions LLC",
+            "isrc": "GBKPL1971962"
+          }
+        },
+        {
+          "rel_path": "10 - Clams Casino - Soliloquy.flac",
+          "tags": {
+            "title": "Soliloquy",
+            "artist": "Clams Casino",
+            "album": "Moon Trip Radio",
+            "track": "10",
+            "date": "2022",
+            "copyright": "(P) 2019 Clams Casino Productions LLC",
+            "isrc": "GBKPL1971963"
+          }
+        },
+        {
+          "rel_path": "11 - Clams Casino - Moon Trip Radio.flac",
+          "tags": {
+            "title": "Moon Trip Radio",
+            "artist": "Clams Casino",
+            "album": "Moon Trip Radio",
+            "track": "11",
+            "date": "2022",
+            "copyright": "(P) 2019 Clams Casino Productions LLC",
+            "isrc": "GBKPL1971964"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Albums/Clams Casino - Rainforest (Deluxe Edition) - 2019",
+      "tracks": [
+        {
+          "rel_path": "01 - Clams Casino - Natural.flac",
+          "tags": {
+            "title": "Natural",
+            "artist": "Clams Casino",
+            "album": "Rainforest (Deluxe Edition)",
+            "track": "1",
+            "date": "2020",
+            "copyright": "2019 Clams Casino Productions LLC",
+            "isrc": "GBCW31200031"
+          }
+        },
+        {
+          "rel_path": "02 - Clams Casino - Treetop.flac",
+          "tags": {
+            "title": "Treetop",
+            "artist": "Clams Casino",
+            "album": "Rainforest (Deluxe Edition)",
+            "track": "2",
+            "date": "2020",
+            "copyright": "2019 Clams Casino Productions LLC",
+            "isrc": "GBCW31200032"
+          }
+        },
+        {
+          "rel_path": "03 - Clams Casino - Waterfalls.flac",
+          "tags": {
+            "title": "Waterfalls",
+            "artist": "Clams Casino",
+            "album": "Rainforest (Deluxe Edition)",
+            "track": "3",
+            "date": "2020",
+            "copyright": "2019 Clams Casino Productions LLC",
+            "isrc": "GBCW31200033"
+          }
+        },
+        {
+          "rel_path": "04 - Clams Casino - Drowning.flac",
+          "tags": {
+            "title": "Drowning",
+            "artist": "Clams Casino",
+            "album": "Rainforest (Deluxe Edition)",
+            "track": "4",
+            "date": "2020",
+            "copyright": "2019 Clams Casino Productions LLC",
+            "isrc": "GBCW31200034"
+          }
+        },
+        {
+          "rel_path": "05 - Clams Casino - Gorilla.flac",
+          "tags": {
+            "title": "Gorilla",
+            "artist": "Clams Casino",
+            "album": "Rainforest (Deluxe Edition)",
+            "track": "5",
+            "date": "2020",
+            "copyright": "2019 Clams Casino Productions LLC",
+            "isrc": "GBCW31200035"
+          }
+        },
+        {
+          "rel_path": "06 - Clams Casino - Postlude Part 1 (Bonus Track).flac",
+          "tags": {
+            "title": "Postlude Part 1 (Bonus Track)",
+            "artist": "Clams Casino",
+            "album": "Rainforest (Deluxe Edition)",
+            "track": "6",
+            "date": "2020",
+            "copyright": "2019 Clams Casino Productions LLC",
+            "isrc": "QZFZ42076096"
+          }
+        },
+        {
+          "rel_path": "07 - Clams Casino - Postlude Part 2 (Bonus Track).flac",
+          "tags": {
+            "title": "Postlude Part 2 (Bonus Track)",
+            "artist": "Clams Casino",
+            "album": "Rainforest (Deluxe Edition)",
+            "track": "7",
+            "date": "2020",
+            "copyright": "2019 Clams Casino Productions LLC",
+            "isrc": "QZFZ42076097"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Albums/Clams Casino - Winter Flower - 2021",
+      "tracks": [
+        {
+          "rel_path": "01 - Clams Casino - Water Theme.flac",
+          "tags": {
+            "title": "Water Theme",
+            "artist": "Clams Casino",
+            "album": "Winter Flower",
+            "track": "1",
+            "date": "2021",
+            "copyright": "2021 Clams Casino Productions, LLC",
+            "isrc": "QM3DF2164068"
+          }
+        },
+        {
+          "rel_path": "02 - Clams Casino - Water Theme 2.flac",
+          "tags": {
+            "title": "Water Theme 2",
+            "artist": "Clams Casino",
+            "album": "Winter Flower",
+            "track": "2",
+            "date": "2021",
+            "copyright": "2021 Clams Casino Productions, LLC",
+            "isrc": "QM3DF2159715"
+          }
+        },
+        {
+          "rel_path": "03 - Clams Casino - Misty.flac",
+          "tags": {
+            "title": "Misty",
+            "artist": "Clams Casino",
+            "album": "Winter Flower",
+            "track": "3",
+            "date": "2021",
+            "copyright": "2021 Clams Casino Productions, LLC",
+            "isrc": "QM3DF2164071"
+          }
+        },
+        {
+          "rel_path": "04 - Clams Casino - Tunnel Speed.flac",
+          "tags": {
+            "title": "Tunnel Speed",
+            "artist": "Clams Casino",
+            "album": "Winter Flower",
+            "track": "4",
+            "date": "2021",
+            "copyright": "2021 Clams Casino Productions, LLC",
+            "isrc": "QM3DF2164072"
+          }
+        },
+        {
+          "rel_path": "05 - Clams Casino - Pine.flac",
+          "tags": {
+            "title": "Pine",
+            "artist": "Clams Casino",
+            "album": "Winter Flower",
+            "track": "5",
+            "date": "2021",
+            "copyright": "2021 Clams Casino Productions, LLC",
+            "isrc": "QM3DF2164073"
+          }
+        },
+        {
+          "rel_path": "06 - Clams Casino - Emblem.flac",
+          "tags": {
+            "title": "Emblem",
+            "artist": "Clams Casino",
+            "album": "Winter Flower",
+            "track": "6",
+            "date": "2021",
+            "copyright": "2021 Clams Casino Productions, LLC",
+            "isrc": "QM3DF2164074"
+          }
+        },
+        {
+          "rel_path": "07 - Clams Casino - Unknown.flac",
+          "tags": {
+            "title": "Unknown",
+            "artist": "Clams Casino",
+            "album": "Winter Flower",
+            "track": "7",
+            "date": "2021",
+            "copyright": "2021 Clams Casino Productions, LLC",
+            "isrc": "QM3DF2164075"
+          }
+        },
+        {
+          "rel_path": "08 - Clams Casino - Winter Flower.flac",
+          "tags": {
+            "title": "Winter Flower",
+            "artist": "Clams Casino",
+            "album": "Winter Flower",
+            "track": "8",
+            "date": "2021",
+            "copyright": "2021 Clams Casino Productions, LLC",
+            "isrc": "QM3DF2164076"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Albums/Clams Casino - Winter Flower Reimagined - 2022",
+      "tracks": [
+        {
+          "rel_path": "01 - Clams Casino - Water Theme Prelude.flac",
+          "tags": {
+            "title": "Water Theme Prelude",
+            "artist": "Clams Casino",
+            "album": "Winter Flower Reimagined",
+            "track": "1",
+            "date": "2022",
+            "copyright": "2022 Clams Casino Productions, LLC",
+            "isrc": "US3DF2226758"
+          }
+        },
+        {
+          "rel_path": "02 - Clams Casino - Through the Tunnel.flac",
+          "tags": {
+            "title": "Through the Tunnel",
+            "artist": "Clams Casino",
+            "album": "Winter Flower Reimagined",
+            "track": "2",
+            "date": "2022",
+            "copyright": "2022 Clams Casino Productions, LLC",
+            "isrc": "US3DF2226760"
+          }
+        },
+        {
+          "rel_path": "03 - Clams Casino - Unknown Tokyo.flac",
+          "tags": {
+            "title": "Unknown Tokyo",
+            "artist": "Clams Casino",
+            "album": "Winter Flower Reimagined",
+            "track": "3",
+            "date": "2022",
+            "copyright": "2022 Clams Casino Productions, LLC",
+            "isrc": "US3DF2214310"
+          }
+        },
+        {
+          "rel_path": "04 - Clams Casino - Mystic Temple.flac",
+          "tags": {
+            "title": "Mystic Temple",
+            "artist": "Clams Casino",
+            "album": "Winter Flower Reimagined",
+            "track": "4",
+            "date": "2022",
+            "copyright": "2022 Clams Casino Productions, LLC",
+            "isrc": "US3DF2226762"
+          }
+        },
+        {
+          "rel_path": "05 - Clams Casino - Pine Forest.flac",
+          "tags": {
+            "title": "Pine Forest",
+            "artist": "Clams Casino",
+            "album": "Winter Flower Reimagined",
+            "track": "5",
+            "date": "2022",
+            "copyright": "2022 Clams Casino Productions, LLC",
+            "isrc": "US3DF2226763"
+          }
+        },
+        {
+          "rel_path": "06 - Clams Casino - Adagio for Winter Flower.flac",
+          "tags": {
+            "title": "Adagio for Winter Flower",
+            "artist": "Clams Casino",
+            "album": "Winter Flower Reimagined",
+            "track": "6",
+            "date": "2022",
+            "copyright": "2022 Clams Casino Productions, LLC",
+            "isrc": "US3DF2226765"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Albums/Wicca Phase Springs Eternal - Spider Web - 2018",
+      "tracks": [
+        {
+          "rel_path": "01 - Wicca Phase Springs Eternal - Mystery.flac",
+          "tags": {
+            "title": "Mystery",
+            "artist": "Wicca Phase Springs Eternal",
+            "album": "Spider Web",
+            "track": "1",
+            "date": "2018",
+            "copyright": "Dark Medicine",
+            "isrc": "QZES71848449"
+          }
+        },
+        {
+          "rel_path": "02 - Wicca Phase Springs Eternal - Caffeine.flac",
+          "tags": {
+            "title": "Caffeine",
+            "artist": "Wicca Phase Springs Eternal",
+            "album": "Spider Web",
+            "track": "2",
+            "date": "2018",
+            "copyright": "Dark Medicine",
+            "isrc": "QZES71848450"
+          }
+        },
+        {
+          "rel_path": "03 - Wicca Phase Springs Eternal - Dead Star.flac",
+          "tags": {
+            "title": "Dead Star",
+            "artist": "Wicca Phase Springs Eternal",
+            "album": "Spider Web",
+            "track": "3",
+            "date": "2018",
+            "copyright": "Dark Medicine",
+            "isrc": "QZES71848451"
+          }
+        },
+        {
+          "rel_path": "04 - Wicca Phase Springs Eternal - Return Year.flac",
+          "tags": {
+            "title": "Return Year",
+            "artist": "Wicca Phase Springs Eternal",
+            "album": "Spider Web",
+            "track": "4",
+            "date": "2018",
+            "copyright": "Dark Medicine",
+            "isrc": "QZES71848452"
+          }
+        },
+        {
+          "rel_path": "05 - Wicca Phase Springs Eternal - Spider Web.flac",
+          "tags": {
+            "title": "Spider Web",
+            "artist": "Wicca Phase Springs Eternal",
+            "album": "Spider Web",
+            "track": "5",
+            "date": "2018",
+            "copyright": "Dark Medicine",
+            "isrc": "QZES71848453"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Singles/2018 - Lil Peep - 4 Gold Chains (feat. Clams Casino)",
+      "tracks": [
+        {
+          "rel_path": "01 - Lil Peep - 4 Gold Chains (feat. Clams Casino).flac",
+          "tags": {
+            "title": "4 Gold Chains (feat. Clams Casino)",
+            "artist": "Lil Peep",
+            "album": "4 Gold Chains (feat. Clams Casino)",
+            "track": "1",
+            "date": "2018",
+            "copyright": "(P) 2018 Lil Peep / AUTNMY under license to Columbia Records",
+            "isrc": "USQX91801033"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Singles/A$AP Rocky - I Smoked Away My Brain (I'm God x Demons Mashup) (feat. Imogen Heap & Clams Casino) - 2023",
+      "tracks": [
+        {
+          "rel_path": "01 - A$AP Rocky - I Smoked Away My Brain (I'm God x Demons Mashup) (feat. Imogen Heap & Clams Casino).flac",
+          "tags": {
+            "title": "I Smoked Away My Brain (I'm God x Demons Mashup) (feat. Imogen Heap & Clams Casino)",
+            "artist": "A$AP Rocky",
+            "album": "I Smoked Away My Brain (I'm God x Demons Mashup) (feat. Imogen Heap & Clams Casino)",
+            "track": "1",
+            "date": "2023",
+            "copyright": "(P) 2023 A$AP Rocky Recordings LLC/RCA Records",
+            "isrc": "USRC12302098"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Singles/Chxpo - Vampire Knight - 2018",
+      "tracks": [
+        {
+          "rel_path": "01 - Chxpo - Vampire Knight.flac",
+          "tags": {
+            "title": "Vampire Knight",
+            "artist": "Chxpo",
+            "album": "Vampire Knight",
+            "track": "1",
+            "date": "2018",
+            "copyright": "2018 Level XXXII",
+            "isrc": "QM24S1802696"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Singles/Clams Casino - Be Somebody (feat. A$AP Rocky, AJ Tracey & Lil B) (Remix) - 2016",
+      "tracks": [
+        {
+          "rel_path": "01 - Clams Casino - Be Somebody (feat. A$AP Rocky, AJ Tracey & Lil B) (Remix).flac",
+          "tags": {
+            "title": "Be Somebody (feat. A$AP Rocky, AJ Tracey & Lil B)",
+            "artist": "Clams Casino",
+            "album": "Be Somebody (feat. A$AP Rocky, AJ Tracey & Lil B) (Remix)",
+            "track": "1",
+            "date": "2016",
+            "copyright": "(P) 2016 Columbia Records, a Division of Sony Music Entertainment",
+            "isrc": "USSM11607527"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Singles/Clams Casino - Gravity - 2018",
+      "tracks": [
+        {
+          "rel_path": "01 - Clams Casino - Gravity.flac",
+          "tags": {
+            "title": "Gravity",
+            "artist": "Clams Casino",
+            "album": "Gravity",
+            "track": "1",
+            "date": "2018",
+            "copyright": "2018 Clams Casino",
+            "isrc": "QM24S1836459"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Singles/Clams Casino - Haunt - 2021",
+      "tracks": [
+        {
+          "rel_path": "01 - Clams Casino - Haunt.flac",
+          "tags": {
+            "title": "Haunt",
+            "artist": "Clams Casino",
+            "album": "Haunt",
+            "track": "1",
+            "date": "2021",
+            "copyright": "2021 Clams Casino Productions LLC",
+            "isrc": "QM24S2100105"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Singles/Clams Casino - NIGHTS LIKE THIS PT 2 (Ambient Demo Version) - 2025",
+      "tracks": [
+        {
+          "rel_path": "01 - Clams Casino - NIGHTS LIKE THIS PT 2 (Ambient Demo Version).flac",
+          "tags": {
+            "title": "NIGHTS LIKE THIS PT 2 (Ambient Demo Version)",
+            "artist": "Clams Casino",
+            "album": "NIGHTS LIKE THIS PT 2 (Ambient Demo Version)",
+            "track": "1",
+            "date": "2025",
+            "copyright": "2025 Columbia Records, a division of Sony Music Entertainment, under exclusive license to Clams Casino Productions LLC",
+            "isrc": "QM24S2503932"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Singles/Flohio - Pounce - 2018",
+      "tracks": [
+        {
+          "rel_path": "01 - Flohio - Pounce.flac",
+          "tags": {
+            "title": "Pounce",
+            "artist": "Flohio",
+            "album": "Pounce",
+            "track": "1",
+            "date": "2022",
+            "copyright": "(P) 2018 AlphaTone",
+            "isrc": "GBMA21853535"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Singles/Lana Del Rey - Summer Bummer (Clams Casino Remix) - 2017",
+      "tracks": [
+        {
+          "rel_path": "01 - Lana Del Rey - Summer Bummer (Clams Casino Remix).flac",
+          "tags": {
+            "title": "Summer Bummer",
+            "artist": "Lana Del Rey",
+            "album": "Summer Bummer (Clams Casino Remix)",
+            "track": "1",
+            "date": "2017",
+            "copyright": "℗ 2017 Lana Del Rey, under exclusive licence to Polydor Ltd. (UK). Under exclusive licence to Interscope Records in the USA",
+            "isrc": "GBUM71703896"
+          }
+        }
+      ]
+    },
+    {
+      "rel_path": "Singles/Lecx Stacy - Of Air - 2023",
+      "tracks": [
+        {
+          "rel_path": "01 - Lecx Stacy - Of Air.flac",
+          "tags": {
+            "title": "Of Air",
+            "artist": "Lecx Stacy",
+            "album": "Of Air",
+            "track": "1",
+            "date": "2023",
+            "copyright": "(P) 2023 THANKS Recordings",
+            "isrc": "QM7282382326"
+          }
+        }
+      ]
+    }
+  ]
+}
