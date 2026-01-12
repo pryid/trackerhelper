@@ -1,12 +1,12 @@
 """
-Тестовые (синтетические) данные для режима --test.
+Synthetic data for --test mode.
 
-Это НЕ unit-тесты, а небольшой набор фикстур, который позволяет:
-- проверить форматирование консольного вывода,
-- проверить генерацию BBCode,
-не имея реальных файлов и ffprobe.
+These are NOT unit tests. It is a small fixture set that allows you to:
+- verify console output formatting,
+- verify BBCode generation,
+without real files or ffprobe.
 
-Отдельный файл нужен, чтобы основной скрипт не был "засорён" тестовыми данными.
+Kept in a separate file so the main logic is not cluttered with fixtures.
 """
 
 from __future__ import annotations
@@ -16,19 +16,19 @@ from typing import Any
 
 
 def make_track_paths(folder: Path, ext: str, titles: list[str]) -> list[Path]:
-    """Создаёт список "фейковых" путей к трекам (файлы реально не существуют)."""
+    """Create a list of fake track paths (files do not actually exist)."""
     return [folder / f"{i:02d} - {t}{ext}" for i, t in enumerate(titles, 1)]
 
 
 def load_synthetic_cases() -> list[dict[str, Any]]:
     """
-    Возвращает список кейсов. Поля:
+    Return a list of cases. Fields:
     - group: Albums/Singles
-    - folder_name: имя папки релиза
-    - seconds: длительность релиза (в секундах)
-    - sample_rate / bit_depth / ext: метаданные для лейблов
-    - track_titles: список треков
-    - dr_text: текст DR-отчёта
+    - folder_name: release folder name
+    - seconds: release duration in seconds
+    - sample_rate / bit_depth / ext: metadata for labels
+    - track_titles: list of tracks
+    - dr_text: DR report text
     """
     return [
         {

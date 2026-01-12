@@ -4,16 +4,17 @@
 """
 discog_dedupe_audio.py
 
-Найти релизы, которые полностью дублируют контент (по звуку) других релизов.
-Работает по акустическим отпечаткам Chromaprint (fpcalc), метаданные/обложки не учитываются.
+Find releases that fully duplicate the audio content of other releases.
+Uses Chromaprint fingerprints via fpcalc; metadata and covers are ignored.
 
-Правила:
-- Релиз можно убрать, только если ВСЕ его треки (duration+fingerprint) содержатся в ОДНОМ другом релизе.
-- Точные дубли релизов (одинаковый набор треков) -> оставить "лучший", остальные убрать.
-- Если у релиза есть уникальные треки, он не должен попасть в удаление (есть safety-check).
+Rules:
+- A release can be removed only if ALL its tracks (duration+fingerprint) exist
+  inside ONE other release.
+- Exact duplicates (same track set) keep the "best" release, remove the rest.
+- If a release has unique tracks, it must not be removed (safety check).
 
-По умолчанию: ничего не удаляет, только пишет отчёты.
-Опционально: --move-to DIR (переместить кандидатов), либо --delete (удалить).
+Default: do not delete anything, only write reports.
+Optional: --move-to DIR (move candidates) or --delete (remove).
 """
 
 from __future__ import annotations
@@ -43,7 +44,7 @@ class TrackKey:
 
 def which_or_die(cmd: str) -> None:
     if shutil.which(cmd) is None:
-        print(f"ERROR: не найдено '{cmd}' в PATH. Установи пакет chromaprint (fpcalc).", file=sys.stderr)
+        print(f"ERROR: '{cmd}' not found in PATH. Install chromaprint (fpcalc).", file=sys.stderr)
         sys.exit(2)
 
 
@@ -64,10 +65,10 @@ def iter_audio_files(roots: List[Path], exts: Set[str]) -> Iterable[Path]:
 
 def fpcalc_one(path: Path) -> Optional[Tuple[str, str, str]]:
     """
-    Возвращает (duration, fingerprint, filepath) или None если fpcalc не смог.
+    Return (duration, fingerprint, filepath) or None if fpcalc fails.
     """
     try:
-        # fpcalc выводит строки вида:
+        # fpcalc outputs lines like:
         # DURATION=xxx
         # FINGERPRINT=....
         res = subprocess.run(
@@ -98,8 +99,9 @@ def fpcalc_one(path: Path) -> Optional[Tuple[str, str, str]]:
 
 def release_dir_from_path(p: Path) -> Optional[str]:
     """
-    Считает релизом папку первого уровня под Albums/ или Singles/.
-    Пример: Albums/Clams Casino - Moon Trip Radio - 2019/01 - ... -> Albums/Clams Casino - Moon Trip Radio - 2019
+    Treat the first folder under Albums/ or Singles/ as the release.
+    Example: Albums/Clams Casino - Moon Trip Radio - 2019/01 - ... ->
+    Albums/Clams Casino - Moon Trip Radio - 2019
     """
     parts = list(p.parts)
     lower_parts = [part.lower() for part in parts]
@@ -116,7 +118,7 @@ def release_dir_from_path(p: Path) -> Optional[str]:
 
 def score_release(rel: str) -> int:
     """
-    Эвристика "что лучше оставить", если одинаковый контент.
+    Heuristic for "keep the best" when content is identical.
     """
     rel_path = Path(rel)
     parts = [part.lower() for part in rel_path.parts]
@@ -141,7 +143,7 @@ def ensure_dir(p: Path) -> None:
 
 def safe_move(src: Path, dst_dir: Path) -> Path:
     """
-    Перемещает src внутрь dst_dir. Если имя занято, добавит суффикс времени.
+    Move src into dst_dir. If the name exists, append a time suffix.
     """
     ensure_dir(dst_dir)
     target = dst_dir / src.name
@@ -156,45 +158,45 @@ def add_dedupe_subparser(subparsers) -> argparse.ArgumentParser:
     parser = subparsers.add_parser(
         "dedupe",
         help="Find duplicate releases by audio fingerprint.",
-        description="Удаление релизов-дублей по содержанию звука (Chromaprint/fpcalc).",
+        description="Find duplicate releases by audio content (Chromaprint/fpcalc).",
     )
     parser.add_argument(
         "--roots",
         nargs="*",
         default=["Albums", "Singles"],
-        help="Корневые папки для сканирования (по умолчанию: Albums Singles).",
+        help="Root folders to scan (default: Albums Singles).",
     )
     parser.add_argument(
         "--ext",
         nargs="*",
         default=sorted(AUDIO_EXTS_DEFAULT),
-        help="Список расширений аудио (по умолчанию: распространённые).",
+        help="Audio extensions list (default: common formats).",
     )
     parser.add_argument(
         "--out-dir",
         default="_dedupe_reports",
-        help="Куда писать отчёты (по умолчанию: ./_dedupe_reports).",
+        help="Where to write reports (default: ./_dedupe_reports).",
     )
     parser.add_argument(
         "--jobs",
         type=int,
         default=max(1, (os.cpu_count() or 2)),
-        help="Параллельность при fpcalc (по умолчанию: cpu_count).",
+        help="Parallelism for fpcalc (default: cpu_count).",
     )
     parser.add_argument(
         "--move-to",
         default=None,
-        help="Если задано: переместить найденные релизы в указанную папку (без удаления).",
+        help="If set: move duplicate releases to the folder (no deletion).",
     )
     parser.add_argument(
         "--delete",
         action="store_true",
-        help="Если задано: удалить найденные релизы (ОПАСНО).",
+        help="If set: delete duplicate releases (dangerous).",
     )
     parser.add_argument(
         "--quiet",
         action="store_true",
-        help="Меньше вывода в stdout.",
+        help="Reduce stdout output.",
     )
     return parser
 
@@ -203,7 +205,7 @@ def run_dedupe(args: argparse.Namespace) -> int:
     which_or_die("fpcalc")
 
     if args.delete and args.move_to:
-        print("ERROR: нельзя одновременно --delete и --move-to", file=sys.stderr)
+        print("ERROR: --delete and --move-to cannot be used together", file=sys.stderr)
         return 2
 
     roots = [Path(r) for r in args.roots]
@@ -213,14 +215,14 @@ def run_dedupe(args: argparse.Namespace) -> int:
 
     audio_files = list(iter_audio_files(roots, exts))
     if not audio_files:
-        print("Не найдено аудиофайлов в указанных roots.", file=sys.stderr)
+        print("No audio files found in the specified roots.", file=sys.stderr)
         return 1
 
     if not args.quiet:
-        print(f"Найдено аудиофайлов: {len(audio_files)}")
-        print(f"Считаю отпечатки fpcalc (jobs={args.jobs})...")
+        print(f"Audio files found: {len(audio_files)}")
+        print(f"Computing fpcalc fingerprints (jobs={args.jobs})...")
 
-    # Параллельный fpcalc через multiprocessing (без внешних зависимостей)
+    # Parallel fpcalc via multiprocessing (no external dependencies)
     from multiprocessing import Pool
 
     rows: List[Tuple[str, str, str]] = []
@@ -230,10 +232,10 @@ def run_dedupe(args: argparse.Namespace) -> int:
                 rows.append(r)
 
     if not rows:
-        print("fpcalc не смог обработать ни один файл (проверь кодеки/файлы).", file=sys.stderr)
+        print("fpcalc failed to process any files (check codecs/files).", file=sys.stderr)
         return 1
 
-    # TSV отпечатков
+    # Fingerprints TSV
     tsv_path = out_dir / "discog_audiofp.tsv"
     rows.sort(key=lambda x: x[2])
     with tsv_path.open("w", encoding="utf-8") as f:
@@ -251,7 +253,7 @@ def run_dedupe(args: argparse.Namespace) -> int:
     releases = sorted(release_keys.keys())
     sizes = {r: len(release_keys[r]) for r in releases}
 
-    # Сколько раз каждый трек встречается
+    # How many times each track appears
     track_counts = Counter()
     for r in releases:
         track_counts.update(release_keys[r])
@@ -297,7 +299,7 @@ def run_dedupe(args: argparse.Namespace) -> int:
                 if best is None:
                     best = b
                 else:
-                    # выбираем минимальный контейнер, затем "лучше оставить"
+                    # Choose the smallest container, then prefer "best to keep"
                     if (len(B), -score_release(b), b) < (len(release_keys[best]), -score_release(best), best):
                         best = b
         if best is not None and best != a:
@@ -310,13 +312,13 @@ def run_dedupe(args: argparse.Namespace) -> int:
         if a not in canons:
             redundant.add(a)
 
-    # Safety-check: не удалять релиз с уникальными треками
+    # Safety check: do not remove a release with unique tracks
     unsafe = sorted([r for r in redundant if unique_count.get(r, 0) > 0])
     if unsafe:
         for r in unsafe:
             redundant.discard(r)
 
-    # Пост-проверка: среди оставшихся релизов есть ли subset-отношения?
+    # Post-check: do any subset relationships remain?
     remaining = [r for r in releases if r not in redundant and release_keys[r]]
     post_contained: List[Tuple[str, str]] = []
     for a in remaining:
@@ -329,35 +331,35 @@ def run_dedupe(args: argparse.Namespace) -> int:
                 post_contained.append((a, b))
                 break
 
-    # Запись отчётов
+    # Write reports
     report_path = out_dir / "discog_redundancy_report.txt"
     list_path = out_dir / "discog_redundant_dirs.txt"
     post_path = out_dir / "discog_postcheck_contained.txt"
 
     lines: List[str] = []
     lines.append("=== DISCOGRAPHY REDUNDANCY REPORT (audio-content) ===\n")
-    lines.append("Правило: удаляем релиз только если ВСЕ его треки по звуку есть в ОДНОМ другом релизе,\n")
-    lines.append("и удаляем точные дубли релизов, оставляя лучший (Albums > Singles, Deluxe/Edition предпочтительнее).\n\n")
+    lines.append("Rule: remove a release only if ALL its tracks exist in ONE other release.\n")
+    lines.append("Exact duplicates keep the best release (Albums > Singles, Deluxe/Edition preferred).\n\n")
 
     if unsafe:
-        lines.append("!!! SAFETY: эти релизы были кандидаты, но у них есть уникальные треки — НЕ УДАЛЯЮТСЯ:\n")
+        lines.append("!!! SAFETY: these releases were candidates but have unique tracks and are NOT removed:\n")
         for r in unsafe:
             lines.append(f"UNSAFE: {r}  unique_tracks={unique_count[r]}  total_tracks={sizes[r]}\n")
         lines.append("\n")
 
     if not redundant:
-        lines.append("Нечего удалять: нет релизов, полностью покрытых другими.\n")
+        lines.append("Nothing to remove: no releases fully covered by others.\n")
     else:
         dups = sorted([r for r in redundant if r in duplicate_of])
         subs = sorted([r for r in redundant if r not in duplicate_of])
 
         if dups:
-            lines.append("== EXACT DUPLICATES (одинаковый набор треков) ==\n")
+            lines.append("== EXACT DUPLICATES (same track set) ==\n")
             for r in dups:
                 lines.append(f"DELETE: {r}\n  identical_to: {duplicate_of[r]}\n  tracks: {sizes[r]}\n\n")
 
         if subs:
-            lines.append("== FULLY CONTAINED (релиз является подмножеством одного другого релиза) ==\n")
+            lines.append("== FULLY CONTAINED (release is a subset of another release) ==\n")
             for r in subs:
                 c = contained_in.get(r, "?")
                 lines.append(
@@ -376,19 +378,19 @@ def run_dedupe(args: argparse.Namespace) -> int:
 
     with post_path.open("w", encoding="utf-8") as f:
         for a, b in post_contained:
-            f.write(f"{a}\t⊆\t{b}\n")
+            f.write(f"{a}\t<=\t{b}\n")
 
     # stdout summary
     if not args.quiet:
-        print(f"Готово. Отчёты в: {out_dir}")
+        print(f"Done. Reports in: {out_dir}")
         print(f"  - {report_path}")
         print(f"  - {list_path}")
         print(f"  - {post_path}")
-        print(f"Кандидатов на удаление/перемещение: {len(redundant)}")
+        print(f"Candidates to remove/move: {len(redundant)}")
         if post_contained:
-            print(f"Пост-проверка: среди оставшихся ещё есть subset-отношения: {len(post_contained)} (см. {post_path})")
+            print(f"Post-check: subset relationships remain: {len(post_contained)} (see {post_path})")
         else:
-            print("Пост-проверка: OK (среди оставшихся нет отношений A ⊆ B).")
+            print("Post-check: OK (no remaining A subset of B relationships).")
 
     # apply actions
     if args.move_to:
@@ -401,7 +403,7 @@ def run_dedupe(args: argparse.Namespace) -> int:
                 safe_move(src, dst)
                 moved += 1
         if not args.quiet:
-            print(f"Перемещено релизов: {moved} -> {dst}")
+            print(f"Moved releases: {moved} -> {dst}")
 
     if args.delete:
         deleted = 0
@@ -411,14 +413,14 @@ def run_dedupe(args: argparse.Namespace) -> int:
                 shutil.rmtree(src)
                 deleted += 1
         if not args.quiet:
-            print(f"Удалено релизов: {deleted}")
+            print(f"Deleted releases: {deleted}")
 
     return 0
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(
-        description="Удаление релизов-дублей по содержанию звука (Chromaprint/fpcalc)."
+        description="Find duplicate releases by audio content (Chromaprint/fpcalc)."
     )
     add_dedupe_subparser(ap.add_subparsers(dest="command"))
     args = ap.parse_args()

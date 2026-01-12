@@ -21,7 +21,7 @@ def upload_to_fastpic_get_direct_link(
     timeout: int = 60,
     session=None,
 ) -> str:
-    """Загружает картинку на FastPic и возвращает Direct Link (<imagepath>)."""
+    """Upload an image to FastPic and return Direct Link (<imagepath>)."""
     if requests is None:
         raise RuntimeError("Cover upload requires 'requests'. Install it or run without cover upload in release.")
 
@@ -46,22 +46,22 @@ def upload_to_fastpic_get_direct_link(
         root = ET.fromstring(resp.text)
     except ET.ParseError as e:
         raise FastPicUploadError(
-            f"Не смог распарсить XML-ответ: {e}. Ответ: {resp.text[:300]!r}"
+            f"Failed to parse XML response: {e}. Response: {resp.text[:300]!r}"
         ) from e
 
     err = root.findtext("error")
     if err:
-        raise FastPicUploadError(f"FastPic вернул ошибку: {err}")
+        raise FastPicUploadError(f"FastPic returned error: {err}")
 
     direct = root.findtext("imagepath")
     if not direct:
-        raise FastPicUploadError(f"В ответе нет <imagepath>. Ответ: {resp.text[:500]!r}")
+        raise FastPicUploadError(f"No <imagepath> in response. Response: {resp.text[:500]!r}")
 
     return direct.strip()
 
 
 class FastPicCoverUploader:
-    """Uploader с переиспользованием Session и простым in-memory кешем."""
+    """Uploader with a reusable Session and a simple in-memory cache."""
 
     def __init__(
         self,
@@ -95,7 +95,7 @@ class FastPicCoverUploader:
 
 
 def find_cover_jpg(release_folder: Path) -> Path | None:
-    """Ищем cover.jpg в папке релиза (case-insensitive)."""
+    """Find cover.jpg in the release folder (case-insensitive)."""
     p = release_folder / "cover.jpg"
     if p.is_file():
         return p

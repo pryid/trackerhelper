@@ -2,7 +2,14 @@ from __future__ import annotations
 
 from .models import ReleaseBBCode
 from .utils import group_sort_index
-from .constants import GROUP_TITLES_RU
+from .constants import BBCODE_LABELS, GROUP_TITLES
+
+
+def _normalize_lang(lang: str | None) -> str:
+    if not lang:
+        return "ru"
+    lang_norm = lang.lower()
+    return lang_norm if lang_norm in BBCODE_LABELS else "ru"
 
 
 def make_release_bbcode(
@@ -13,24 +20,29 @@ def make_release_bbcode(
     overall_bit: str,
     overall_sr: str,
     grouped_releases: dict[str, list[ReleaseBBCode]],
+    *,
+    lang: str = "ru",
 ) -> str:
+    lang_key = _normalize_lang(lang)
+    labels = BBCODE_LABELS[lang_key]
+    group_titles = GROUP_TITLES[lang_key]
     yr = f" - {year_range}" if year_range else ""
     parts: list[str] = []
 
     parts.append(f"[size=24]{root_name}{yr}[/size]\n\n")
     parts.append("[img=right]ROOT_COVER_URL[/img]\n\n")
-    parts.append("[b]Жанр[/b]: GENRE\n")
-    parts.append("[b]Носитель[/b]: WEB [url=https://service.com/123]Service[/url]\n")
-    parts.append("[b]Издатель (лейбл)[/b]: ЛЕЙБЛ\n")
-    parts.append(f"[b]Год издания[/b]: {year_range or 'YEAR'}\n")
-    parts.append(f"[b]Аудиокодек[/b]: {overall_codec}\n")
-    parts.append("[b]Тип рипа[/b]: tracks\n")
-    parts.append("[b]Источник[/b]: WEB\n")
-    parts.append(f"[b]Продолжительность[/b]: {total_duration}\n")
+    parts.append(f"[b]{labels['genre']}[/b]: GENRE\n")
+    parts.append(f"[b]{labels['media']}[/b]: WEB [url=https://service.com/123]Service[/url]\n")
+    parts.append(f"[b]{labels['label']}[/b]: {labels['label_placeholder']}\n")
+    parts.append(f"[b]{labels['year']}[/b]: {year_range or 'YEAR'}\n")
+    parts.append(f"[b]{labels['codec']}[/b]: {overall_codec}\n")
+    parts.append(f"[b]{labels['rip_type']}[/b]: tracks\n")
+    parts.append(f"[b]{labels['source']}[/b]: WEB\n")
+    parts.append(f"[b]{labels['duration']}[/b]: {total_duration}\n")
 
     for group in sorted(grouped_releases.keys(), key=group_sort_index):
-        ru_title = GROUP_TITLES_RU.get(group, group)
-        parts.append(f'[spoiler="{ru_title}"]\n\n')
+        group_title = group_titles.get(group, group)
+        parts.append(f'[spoiler="{group_title}"]\n\n')
 
         for rel in grouped_releases[group]:
             year = rel.year
@@ -41,14 +53,14 @@ def make_release_bbcode(
             parts.append("[align=center]")
             cover = rel.cover_url or "COVER_URL"
             parts.append(f"[img]{cover}[/img]\n")
-            parts.append("[b]Носитель[/b]: WEB [url=https://service.com/123]Service[/url]\n")
-            parts.append(f"Продолжительность: {rel.duration}\n")
-            parts.append('[spoiler="Треклист"]\n')
+            parts.append(f"[b]{labels['media']}[/b]: WEB [url=https://service.com/123]Service[/url]\n")
+            parts.append(f"{labels['duration']}: {rel.duration}\n")
+            parts.append(f'[spoiler="{labels["tracklist"]}"]\n')
             parts.extend(line + "\n" for line in rel.tracklist)
             parts.append("[/spoiler]\n")
             parts.append("[/align]\n\n")
 
-            parts.append('[spoiler="Динамический отчет (DR)"]\n')
+            parts.append(f'[spoiler="{labels["dr_report"]}"]\n')
             parts.append("[pre]\n")
             parts.append(((rel.dr or "info").rstrip("\n")) + "\n")
             parts.append("[/pre]\n")
@@ -57,7 +69,7 @@ def make_release_bbcode(
 
         parts.append("[/spoiler]\n\n")
 
-    parts.append('[spoiler="Об исполнителе (группе)"]\n')
+    parts.append(f'[spoiler="{labels["about"]}"]\n')
     parts.append("info\n")
     parts.append("[/spoiler]\n")
 
@@ -69,7 +81,11 @@ def make_single_release_bbcode(
     year_range: str | None,
     overall_codec: str,
     release: ReleaseBBCode,
+    *,
+    lang: str = "ru",
 ) -> str:
+    lang_key = _normalize_lang(lang)
+    labels = BBCODE_LABELS[lang_key]
     title = str(release.title or "").strip() or "TITLE"
     year_val = release.year or year_range or "YEAR"
     cover = release.cover_url or "COVER_URL"
@@ -80,26 +96,26 @@ def make_single_release_bbcode(
     parts: list[str] = []
     parts.append(f"[size=24]{root_name} / {title}[/size]\n\n")
     parts.append(f"[img=right]{cover}[/img]\n\n")
-    parts.append("[b]Жанр[/b]: GENRE\n")
-    parts.append("[b]Носитель[/b]: WEB [url=https://service.com/123]Service[/url]\n")
-    parts.append("[b]Издатель (лейбл)[/b]: ЛЕЙБЛ\n")
-    parts.append(f"[b]Год издания[/b]: {year_val}\n")
-    parts.append(f"[b]Аудиокодек[/b]: {overall_codec}\n")
-    parts.append("[b]Тип рипа[/b]: tracks\n")
-    parts.append("[b]Источник[/b]: WEB\n")
-    parts.append(f"[b]Продолжительность[/b]: {duration}\n\n")
+    parts.append(f"[b]{labels['genre']}[/b]: GENRE\n")
+    parts.append(f"[b]{labels['media']}[/b]: WEB [url=https://service.com/123]Service[/url]\n")
+    parts.append(f"[b]{labels['label']}[/b]: {labels['label_placeholder']}\n")
+    parts.append(f"[b]{labels['year']}[/b]: {year_val}\n")
+    parts.append(f"[b]{labels['codec']}[/b]: {overall_codec}\n")
+    parts.append(f"[b]{labels['rip_type']}[/b]: tracks\n")
+    parts.append(f"[b]{labels['source']}[/b]: WEB\n")
+    parts.append(f"[b]{labels['duration']}[/b]: {duration}\n\n")
 
-    parts.append('[spoiler="Треклист"]\n')
+    parts.append(f'[spoiler="{labels["tracklist"]}"]\n')
     parts.extend(line + "\n" for line in tracklist)
     parts.append("[/spoiler]\n\n")
 
-    parts.append('[spoiler="Динамический отчет (DR)"]\n')
+    parts.append(f'[spoiler="{labels["dr_report"]}"]\n')
     parts.append("[pre]\n")
     parts.append(dr_text + "\n")
     parts.append("[/pre]\n")
     parts.append("[/spoiler]\n\n")
 
-    parts.append('[spoiler="Об исполнителе (группе)"]\n')
+    parts.append(f'[spoiler="{labels["about"]}"]\n')
     parts.append("info\n")
     parts.append("[/spoiler]\n")
 

@@ -8,11 +8,11 @@ _TRACK_NUM_RE = re.compile(r"^\s*(\d{1,3})\s*([.\-_\s]+)\s*(.*)$")
 
 def build_tracklist_lines(audio_files: list[Path]) -> list[str]:
     """
-    Делает треклист по именам файлов.
+    Builds a tracklist from file names.
 
-    Логика оставлена прежней:
-    - Если имя начинается с номера, используем его.
-    - Иначе нумеруем автоматически с 01.
+    Logic is unchanged:
+    - If the name starts with a track number, keep it.
+    - Otherwise, auto-number starting at 01.
     """
     lines: list[str] = []
     auto_n = 1

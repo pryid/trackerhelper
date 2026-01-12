@@ -5,16 +5,16 @@ from pathlib import Path
 
 
 def normalize_name(s: str) -> str:
-    """Нормализация для сопоставления названий релизов с DR-файлами."""
+    """Normalize names to match release titles with DR files."""
     s = s.strip().lower()
-    s = s.replace("ё", "е")
-    s = s.replace("–", "-").replace("—", "-")
+    s = s.replace("\u0451", "\u0435")
+    s = s.replace("\u2013", "-").replace("\u2014", "-")
     s = re.sub(r"\s+", " ", s)
     return s
 
 
 def strip_dr_suffix(stem: str) -> str:
-    """Убирает суффиксы вида _dr, -dr, (dr) и т.п. из имени файла (без расширения)."""
+    """Remove suffixes like _dr, -dr, (dr) from the filename (without extension)."""
     s = stem
     s = re.sub(r"[\s._-]*(dr|d\.r\.)\s*$", "", s, flags=re.IGNORECASE)
     s = re.sub(r"\s*\(dr\)\s*$", "", s, flags=re.IGNORECASE)
@@ -23,8 +23,8 @@ def strip_dr_suffix(stem: str) -> str:
 
 def read_text_guess(path: Path) -> str:
     """
-    Пытаемся прочитать текст в распространённых кодировках.
-    Полезно для отчётов DR, которые иногда бывают в cp1251.
+    Try to read text using common encodings.
+    Useful for DR reports that are sometimes cp1251.
     """
     for enc in ("utf-8-sig", "utf-8", "cp1251", "latin-1"):
         try:
@@ -38,8 +38,8 @@ def read_text_guess(path: Path) -> str:
 
 def build_dr_index(dr_dir: Path) -> dict[str, Path]:
     """
-    Индекс: normalized_release_name -> путь к txt.
-    Нужен как fallback, если файл не совпал по точному имени.
+    Index: normalized_release_name -> path to txt.
+    Used as a fallback when there is no exact filename match.
     """
     idx: dict[str, Path] = {}
     if not dr_dir.exists() or not dr_dir.is_dir():
@@ -56,10 +56,9 @@ def build_dr_index(dr_dir: Path) -> dict[str, Path]:
 
 def find_dr_text_for_release(folder_name: str, dr_dir: Path, dr_index: dict[str, Path]) -> str | None:
     """
-    Поиск DR-отчёта для папки релиза.
+    Find a DR report for a release folder.
 
-    Сначала пробуем "как в оригинале" через несколько шаблонов,
-    затем — через индекс normalize_name.
+    First try exact patterns, then fall back to the normalize_name index.
     """
     candidates = [
         dr_dir / f"{folder_name}_dr.txt",

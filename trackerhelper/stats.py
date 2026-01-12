@@ -12,11 +12,11 @@ from .utils import extract_years_from_text
 
 def iter_release_audio_files(root: Path, exts: set[str], include_root: bool) -> Iterable[tuple[Path, list[Path]]]:
     """
-    Итерируемся по папкам и отдаём список аудиофайлов внутри папки.
+    Iterate folders and return audio files inside each folder.
 
-    Важно:
-    - В команде release треклист строится по списку найденных файлов в папке (даже если ffprobe
-      не смог прочитать длительность у какого-то файла — как в оригинале).
+    Note:
+    - In the release command, the tracklist is built from the files found in the folder,
+      even if ffprobe could not read duration for some files (matches original behavior).
     """
     for dirpath, _, filenames in os.walk(root):
         folder = Path(dirpath)
@@ -40,7 +40,7 @@ def collect_real_stats(
     ffprobe: FfprobeClient,
 ) -> tuple[list[ReleaseStats], StatsSummary]:
     """
-    Собирает статистику с реальной ФС + ffprobe.
+    Collect stats from the real filesystem plus ffprobe.
     """
     releases: list[ReleaseStats] = []
     summary = StatsSummary(
@@ -102,8 +102,8 @@ def collect_real_stats(
 
 def collect_synthetic_stats(root: Path) -> tuple[list[ReleaseStats], StatsSummary]:
     """
-    Синтетический набор данных для проверки форматирования без ffprobe/ФС.
-    Данные находятся в synthetic_dataset.py.
+    Synthetic dataset to test formatting without ffprobe or filesystem access.
+    Data lives in synthetic_dataset.py.
     """
     from .synthetic_dataset import load_synthetic_cases, make_track_paths
 

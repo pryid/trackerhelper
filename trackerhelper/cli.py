@@ -29,7 +29,7 @@ from .utils import (
 
 
 def normalize_exts(user_exts: list[str]) -> set[str]:
-    """Объединяем дефолтные расширения и пользовательские --ext."""
+    """Merge default extensions with user-provided --ext values."""
     exts = set(AUDIO_EXTS_DEFAULT)
     for e in user_exts:
         e = e.strip().lower()
@@ -59,6 +59,8 @@ def build_parser() -> argparse.ArgumentParser:
     release_p.add_argument("--dr", default=None, help="Directory with DR reports (e.g. *_dr.txt).")
     release_p.add_argument("--test", action="store_true", help="Generate fake data (no ffprobe/files needed) to test output formatting.")
     release_p.add_argument("--no-cover", action="store_true", help="Disable cover upload to FastPic.")
+    release_p.add_argument("--bbcode-lang", choices=["ru", "en"], default="ru", help="BBCode language (default: ru).")
+    release_p.add_argument("--bbcode-en", action="store_true", help="Shortcut for --bbcode-lang en.")
 
     normalize_p = subparsers.add_parser("normalize", help="Normalize release folder names (dry run by default).")
     normalize_p.add_argument("path", nargs="?", default=".", help="Root folder (default: current directory).")
@@ -177,7 +179,7 @@ def run_release(args: argparse.Namespace) -> int:
     year_range = None
     if summary.all_years:
         y_min, y_max = min(summary.all_years), max(summary.all_years)
-        year_range = f"{y_min}–{y_max}" if y_min != y_max else f"{y_min}"
+        year_range = f"{y_min}-{y_max}" if y_min != y_max else f"{y_min}"
 
     grouped: dict[str, list[ReleaseBBCode]] = {}
     for rel in releases:
@@ -219,6 +221,10 @@ def run_release(args: argparse.Namespace) -> int:
         lst.sort(key=lambda r: ((r.year or 9999), str(r.title).lower()))
 
     total_releases = len(releases)
+    lang = args.bbcode_lang
+    if args.bbcode_en:
+        lang = "en"
+
     if total_releases == 1:
         single_release = None
         for rels in grouped.values():
@@ -235,6 +241,7 @@ def run_release(args: argparse.Namespace) -> int:
             year_range=year_range,
             overall_codec=codec_label(summary.total_exts),
             release=single_release,
+            lang=lang,
         )
     else:
         bbcode = make_release_bbcode(
@@ -245,6 +252,7 @@ def run_release(args: argparse.Namespace) -> int:
             overall_bit=bit_label(summary.total_bit),
             overall_sr=sr_label(summary.total_sr),
             grouped_releases=grouped,
+            lang=lang,
         )
 
     out_path = Path.cwd() / f"{root.name}.txt"

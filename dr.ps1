@@ -6,61 +6,61 @@ param(
 
 
 
-  # если foobar portable — укажи явно
+  # if foobar is portable, set the path explicitly
 
   [string]$FoobarPath = "",
 
 
 
-  # по твоему скрину (важно: ТОЛЬКО конечное имя команды)
+  # from your screenshot (important: ONLY the final command name)
 
   [string]$CommandName = "Measure Dynamic Range",
 
 
 
-  # если структура Albums/* и Singles/*
+  # if you use Albums/* and Singles/* structure
 
   [string[]]$Groups = @("Albums", "Singles"),
 
 
 
-  # какие файлы считать треками
+  # which files are treated as tracks
 
   [string[]]$Ext = @(".flac",".mp3",".m4a",".aac",".ogg",".opus",".wav",".wma",".aiff",".aif",".alac"),
 
 
 
-  # максимум ждать появления лога на один релиз (сек)
+  # max wait for a log per release (seconds)
 
   [int]$TimeoutSec = 1800,
 
 
 
-  # как обычно называется лог (если не ловит — см. подсказку ниже)
+  # default log name (if not matched, see hints below)
 
   [string]$LogNameRegex = "^foo_dr.*\.(txt|log)$",
 
 
 
-  # куда сохранять итоговые отчёты
+  # where to save final reports
 
   [string]$OutDir = "",
 
 
 
-  # где держать временные копии релизов (локально!)
+  # where to keep staging copies (local only)
 
   [string]$StageRoot = "",
 
 
 
-  # не удалять временную копию релиза (для дебага)
+  # keep staging folder (debugging)
 
   [switch]$KeepStage,
 
 
 
-  # показать окно foobar (по умолчанию minimized)
+  # show foobar window (default: minimized)
 
   [switch]$ShowFoobar
 
@@ -82,7 +82,7 @@ function Resolve-Foobar([string]$Provided) {
 
 
 
-  # пробуем стандартные места
+  # try standard locations
 
   $pf = $env:ProgramFiles
 
@@ -104,7 +104,7 @@ function Resolve-Foobar([string]$Provided) {
 
 
 
-  throw "Не нашёл foobar2000.exe. Укажи -FoobarPath 'C:\Path\to\foobar2000.exe'"
+  throw "foobar2000.exe not found. Set -FoobarPath 'C:\\Path\\to\\foobar2000.exe'"
 
 }
 
@@ -180,7 +180,7 @@ function Get-RelativePath([string]$fromDir, [string]$toPath) {
 
 function Quote-Arg([string]$s) {
 
-  # для cmdline foobar достаточно обычных кавычек; экранируем внутренние "
+  # foobar cmdline accepts plain quotes; escape inner quotes
 
   return '"' + ($s -replace '"','\"') + '"'
 
@@ -286,7 +286,7 @@ function Start-DrScan([string]$fb2k, [string]$cmdName, [string[]]$files, [switch
 
   # /context_command:<context menu command> <files> :contentReference[oaicite:2]{index=2}
 
-  # + /immediate чтобы не ждать сортировку/задержку добавления :contentReference[oaicite:3]{index=3}
+  # + /immediate to avoid waiting for sorting/add delay :contentReference[oaicite:3]{index=3}
 
   $cmdSwitch = "/context_command:" + (Quote-Arg $cmdName)
 
@@ -388,7 +388,7 @@ foreach ($rf in $relFolders) {
 
 
 
-  # стейджим в локальную папку (иначе лог не создать на read-only)
+  # stage to a local folder (log cannot be created on read-only)
 
   $stageFolder = Join-Path $StageRoot (Sanitize-FileName $releaseName)
 
@@ -398,7 +398,7 @@ foreach ($rf in $relFolders) {
 
 
 
-  # чистим старые логи в stage (чтобы не схватить “старьё”)
+  # remove old logs from staging (avoid picking up stale ones)
 
   Get-ChildItem -LiteralPath $stageFolder -Recurse -File -ErrorAction SilentlyContinue |
 
@@ -424,9 +424,9 @@ foreach ($rf in $relFolders) {
 
   if (-not $log) {
 
-    Write-Warning "  Лог не появился. Обычно это значит, что в DR Meter НЕ включено automatic log writing. (В changelog упоминается отдельная настройка auto log writing.) :contentReference[oaicite:4]{index=4}"
+    Write-Warning "  Log did not appear. Usually this means DR Meter automatic log writing is OFF. (Changelog mentions a separate auto log writing setting.) :contentReference[oaicite:4]{index=4}"
 
-    Write-Warning "  Для диагностики: запусти с -LogNameRegex '.*\.(txt|log)$' и посмотри, что реально создаётся."
+    Write-Warning "  For diagnostics: run with -LogNameRegex '.*\\.(txt|log)$' and see what files are created."
 
     if (-not $KeepStage) { Remove-Item -LiteralPath $stageFolder -Recurse -Force -ErrorAction SilentlyContinue }
 
@@ -453,4 +453,3 @@ foreach ($rf in $relFolders) {
   }
 
 }
-

@@ -1,37 +1,38 @@
 # trackerhelper
 
-Набор утилит для работы с музыкальной дискографией, разложенной по папкам (например, `Albums/*` и `Singles/*`):
+English documentation. For Russian, see `README.ru.md`.
 
-- **`dr.ps1`** — автоматизирует запуск **foobar2000** и измерение **Dynamic Range (DR)** для каждого релиза, сохраняя DR-логи в отдельную папку.
-- **`trackerhelper`** — CLI-утилита для сканирования дискографии, подсчёта длительности и генерации BBCode-шаблонов; умеет подхватывать DR-отчёты `*_dr.txt` и (опционально) загружать `cover.jpg` на FastPic.
-- **`synthetic_dataset.py`** — фикстуры для режима `--test` (проверка форматирования без реальных файлов и ffprobe).
+Utilities for music discography folders (for example, `Albums/*` and `Singles/*`):
 
-## Требования
+- `dr.ps1` automates foobar2000 Dynamic Range (DR) scans and saves logs per release.
+- `trackerhelper` is a CLI that scans releases, summarizes durations, and generates BBCode templates. It can match `*_dr.txt` logs and optionally upload `cover.jpg` to FastPic.
+
+## Requirements
 
 ### `dr.ps1` (Windows)
-> ⚠️ **Обязательно включи автосохранение DR-логов в foobar2000**, иначе `dr.ps1` не сможет дождаться файла лога.
+WARNING: You must enable automatic DR log saving in foobar2000, otherwise `dr.ps1` will not see the log file.
 
 - Windows 10/11
-- PowerShell 5+ (или PowerShell 7+)
-- Установленный **foobar2000** (обычный или portable)
-- Установленный компонент **DR Meter** в foobar2000
-- Включённая опция **автоматической записи лога DR** (иначе лог не появится)
+- PowerShell 5+ (or PowerShell 7+)
+- foobar2000 installed (standard or portable)
+- DR Meter component installed
+- Automatic DR log writing enabled
 
-> Если DR Meter сохраняет логи в другое место (глобальную папку), `dr.ps1` их не увидит, потому что ищет лог внутри staging-папки релиза.
+If DR Meter saves logs to a global folder, `dr.ps1` will not see them because it expects the log inside the release staging folder.
 
 ### `trackerhelper` (Windows / Linux / macOS)
-- Python **3.10+**
-- `ffprobe` из состава **ffmpeg** (должен быть доступен в `PATH`)
-- `requests` (опционально, нужен для загрузки обложек на FastPic в команде `release`)
+- Python 3.10+
+- `ffprobe` from ffmpeg available in `PATH`
+- `requests` (optional, only for FastPic uploads in `release`)
 
-Проверка:
+Check:
 ```bash
 ffprobe -version
 ```
 
-## Рекомендуемая структура папок
+## Recommended folder structure
 
-Пример:
+Example:
 
 ```text
 DiscographyRoot/
@@ -46,193 +47,198 @@ DiscographyRoot/
       ...
 ```
 
-Подсказки:
-- Группа определяется первым сегментом относительного пути (например `Albums`/`Singles`). Другие группы тоже поддерживаются и будут выведены отдельными заголовками.
-- Релизом считается **любая папка, в которой найден хотя бы один поддерживаемый аудиофайл**.
-- Год в имени папки релиза можно задавать как `Название - 2024` или `Название – 2024` — он будет использован в BBCode.
+Notes:
+- Group is the first path segment (for example `Albums` or `Singles`). Other groups are supported and printed separately.
+- A release is any folder with at least one supported audio file.
+- Year in the release folder name can be `Title - 2024` and is used for BBCode output.
 
-## Установка
+## Install
 
 ```bash
 pip install trackerhelper
 ```
 
-Опционально, для загрузки обложек:
+Optional, for cover uploads:
 ```bash
 pip install trackerhelper[cover]
 ```
 
-Разработка из репозитория:
+Developer install from repo:
 ```bash
 git clone https://github.com/pryid/trackerhelper
 cd trackerhelper
 pip install -e .
 ```
 
-На Windows, если PowerShell запрещает запуск скриптов, можно разрешить для текущего пользователя:
-
+On Windows, if PowerShell blocks scripts, you can allow them for the current user:
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-## Использование
+## Usage
 
-## 1) Автосбор DR-логов через foobar2000 (`dr.ps1`)
+## 1) DR logs via foobar2000 (`dr.ps1`)
 
-### Базовый запуск
+### Basic run
 ```powershell
 .\dr.ps1 -Root "D:\Music\Artist"
 ```
 
-По умолчанию скрипт:
-- ищет релизы в `Root\Albums\*` и `Root\Singles\*` (если такие группы есть),
-- иначе считает релизами папки `Root\*`,
-- копирует каждый релиз в локальный staging (чтобы записать лог даже если источник read-only, например SMB),
-- запускает foobar2000 с context menu командой `Measure Dynamic Range`,
-- ждёт появления лога `foo_dr*.txt|log` внутри staging,
-- копирует лог в папку отчётов.
+By default the script:
+- looks for releases in `Root\Albums\*` and `Root\Singles\*` if those groups exist,
+- otherwise treats `Root\*` as releases,
+- copies each release into a local staging folder (needed if the source is read-only, for example SMB),
+- runs foobar2000 context menu command `Measure Dynamic Range`,
+- waits for a `foo_dr*.txt|log` file inside staging,
+- copies the log into the reports folder.
 
-### Где будут отчёты
-Если не задан `-OutDir`, отчёты сохраняются в:
+### Where reports are saved
+If `-OutDir` is not set, reports go to:
 - `%USERPROFILE%\Music\DR`
 
-Имя файла: `<имя_релиза>_dr.txt` (имя релиза берётся из имени папки; недопустимые символы заменяются на `_`).
+File name: `<release_name>_dr.txt` (release name comes from the folder name; invalid characters are replaced with `_`).
 
-### Если foobar2000 portable / не в стандартном месте
+### If foobar2000 is portable or not in the default location
 ```powershell
 .\dr.ps1 -Root "D:\Music\Artist" -FoobarPath "D:\Apps\foobar2000\foobar2000.exe"
 ```
 
-### Часто используемые параметры
-- `-Root` (**обязательный**) — корневая папка дискографии.
-- `-FoobarPath` — путь к `foobar2000.exe` (если автопоиск не нашёл).
-- `-CommandName` — **точное** имя команды из контекстного меню foobar (по умолчанию `"Measure Dynamic Range"`).
-- `-Groups` — группы релизов (по умолчанию `Albums`, `Singles`).
-- `-Ext` — расширения аудио (список).
-- `-TimeoutSec` — максимальное ожидание лога на релиз (по умолчанию 1800 сек).
-- `-LogNameRegex` — регулярка для имени лога (по умолчанию `^foo_dr.*\.(txt|log)$`).
-- `-OutDir` — куда сохранять итоговые `*_dr.txt`.
-- `-StageRoot` — где держать временные копии релизов (локально).
-- `-KeepStage` — не удалять staging (удобно для диагностики).
-- `-ShowFoobar` — показывать окно foobar (иначе запускается minimized).
+### Common parameters
+- `-Root` (required) release root folder
+- `-FoobarPath` path to `foobar2000.exe` if auto-detect fails
+- `-CommandName` exact context menu command name (default: `"Measure Dynamic Range"`)
+- `-Groups` release groups (default: `Albums`, `Singles`)
+- `-Ext` audio extensions list
+- `-TimeoutSec` max wait per release (default: 1800 seconds)
+- `-LogNameRegex` log filename regex (default: `^foo_dr.*\.(txt|log)$`)
+- `-OutDir` output folder for final `*_dr.txt`
+- `-StageRoot` staging folder location (local)
+- `-KeepStage` keep staging folder (useful for debugging)
+- `-ShowFoobar` show foobar window (default is minimized)
 
-### Пример для источника read-only (SMB)
+### Example for read-only source (SMB)
 ```powershell
 .\dr.ps1 -Root "\\NAS\Music\Artist" -OutDir "D:\Reports\DR"
 ```
 
-## 2) Подсчёт длительности/параметров + генерация BBCode (`trackerhelper`)
+## 2) Duration stats and BBCode (`trackerhelper`)
 
-### Базовый запуск (группированный вывод)
+### Basic stats (grouped output)
 ```bash
 trackerhelper stats "/path/to/DiscographyRoot"
 ```
 
-Вывод по каждому релизу содержит:
-- длительность
-- количество треков (по файлам, у которых удалось прочитать duration)
-- bit depth и sample rate (если ffprobe вернул значения)
+Output per release includes:
+- duration
+- track count (only files where duration was read)
+- bit depth and sample rate (if ffprobe returns values)
 
-В конце печатается суммарная строка `Total: ...`.
+The end prints `Total: ...`.
 
-### Включить треки, лежащие прямо в корне
-По умолчанию корень не считается релизом, чтобы не смешивать файлы. Если нужно — добавь `--include-root`:
-
+### Include tracks directly under root
+By default the root is not treated as a release. To include it:
 ```bash
 trackerhelper stats "/path/to/DiscographyRoot" --include-root
 ```
 
-### Добавить расширение (повторяемый параметр)
+### Add extra extensions (repeatable)
 ```bash
 trackerhelper stats "/path/to/DiscographyRoot" --ext .ape --ext .tak
 ```
 
-### Нормализация имён папок релизов
-По умолчанию выполняется "сухой" прогон (без переименований):
-
+### Normalize release folder names
+Dry run by default:
 ```bash
 trackerhelper normalize "/path/to/DiscographyRoot"
 ```
 
-Чтобы применить изменения:
-
+Apply changes:
 ```bash
 trackerhelper normalize "/path/to/DiscographyRoot" --apply
 ```
 
-Форматы:
-- один релиз: `Artist - Album (Year)`
-- несколько релизов: `Year - Artist - Album`
+Formats:
+- single release: `Artist - Album (Year)`
+- multiple releases: `Year - Artist - Album`
 
-Важно: в команде `normalize` данные берутся из **тегов аудиофайлов** (album/artist), а год — из имени папки. Если теги/год отсутствуют, папка будет пропущена.
+Note: `normalize` uses audio tags for `album` and `artist`, and the year from the folder name. If tags or year are missing, the folder is skipped.
 
-### Генерация BBCode-шаблона дискографии
+### Generate a BBCode discography template
 ```bash
 trackerhelper release "/path/to/DiscographyRoot"
 ```
 
-Отключить загрузку обложек на FastPic:
+By default BBCode labels are Russian. Use English output:
+```bash
+trackerhelper release "/path/to/DiscographyRoot" --bbcode-lang en
+```
+or:
+```bash
+trackerhelper release "/path/to/DiscographyRoot" --bbcode-en
+```
+
+Disable FastPic cover upload:
 ```bash
 trackerhelper release "/path/to/DiscographyRoot" --no-cover
 ```
 
-Файл будет записан в **текущую рабочую директорию** как:
-- `<имя_корневой_папки>.txt`
+Output file is written to the current working directory as:
+- `<root_folder_name>.txt`
 
-В шаблоне остаются плейсхолдеры `ROOT_COVER_URL`, `GENRE`, `Service`, `ЛЕЙБЛ`, `YEAR` — заполни их вручную.
+The template keeps placeholders like `ROOT_COVER_URL`, `GENRE`, `Service`, `YEAR`.
+Russian output uses the Cyrillic label placeholder (`\\u041b\\u0415\\u0419\\u0411\\u041b`), English output uses `LABEL`.
 
-### Подстановка DR-отчётов в BBCode
-Если у тебя уже есть `*_dr.txt` (например, собранные `dr.ps1`), укажи папку с логами:
-
+### Add DR reports to BBCode
+If you already have `*_dr.txt` (for example from `dr.ps1`), pass the log directory:
 ```bash
 trackerhelper release "/path/to/DiscographyRoot" --dr "C:\Users\<you>\Music\DR"
 ```
 
-Скрипт пытается сопоставить DR-файл с папкой релиза по имени (несколько вариантов имён + нормализация пробелов/дефисов). Если отчёт не найден — в BBCode остаётся `info`.
+The tool tries to match DR logs by folder name (several name patterns plus whitespace/dash normalization). If no report is found, BBCode keeps `info`.
 
-### Автоподстановка обложек через FastPic (опционально)
-Если в папке релиза лежит `cover.jpg` (регистр неважен), и установлен пакет `requests`, то в команде `release` утилита загрузит обложку на FastPic и подставит прямую ссылку в BBCode. Если обложка не найдена или загрузка не удалась — остаётся `COVER_URL`.
+### FastPic cover upload (optional)
+If the release folder contains `cover.jpg` (case-insensitive) and `requests` is installed, `release` uploads the cover to FastPic and inserts the direct link. If not found or upload fails, it keeps `COVER_URL`.
 
-## 3) Режим проверки форматирования без ffprobe/ФС (`--test`)
+## 3) Formatting-only mode (`--test`)
 ```bash
 trackerhelper stats "/any/path" --test
 trackerhelper release "/any/path" --test
 ```
 
-## 4) Поиск дублей релизов по аудио-отпечаткам (`trackerhelper dedupe`)
+## 4) Detect duplicate releases by audio fingerprints (`trackerhelper dedupe`)
 ```bash
 trackerhelper dedupe --roots Albums Singles
 ```
 
-Опции:
-- `--move-to DIR` — переместить найденные релизы в указанную папку
-- `--delete` — удалить найденные релизы (опасно)
+Options:
+- `--move-to DIR` move duplicate releases to a folder
+- `--delete` delete duplicate releases (dangerous)
 
-`--test` использует данные из `synthetic_dataset.py` и позволяет быстро проверить, как выглядит консольный вывод и BBCode, не имея реальных файлов.
+`--test` uses synthetic data from `trackerhelper/synthetic_dataset.py` and lets you check formatting without real files or ffprobe.
 
 ## Troubleshooting
 
-### `dr.ps1`: лог не появляется
-Чаще всего причина одна из двух:
-- в DR Meter не включено автосохранение логов;
-- DR Meter сохраняет логи не в папку релиза (а в другое место).
+### `dr.ps1`: log does not appear
+Most common reasons:
+- automatic log writing is not enabled in DR Meter;
+- DR Meter saves logs outside the release folder.
 
-Для диагностики:
+For diagnostics:
 ```powershell
 .\dr.ps1 -Root "D:\Music\Artist" -LogNameRegex ".*\.(txt|log)$" -KeepStage
 ```
-После этого проверь, какие файлы создаются в staging-папке.
+Check what files are created inside the staging folder.
 
-### `dr.ps1`: “не нашёл foobar2000.exe”
-Передай путь вручную:
+### `dr.ps1`: "cannot find foobar2000.exe"
+Provide the path manually:
 ```powershell
 .\dr.ps1 -Root "D:\Music\Artist" -FoobarPath "D:\Apps\foobar2000\foobar2000.exe"
 ```
 
 ### `trackerhelper`: `Error: ffprobe not found`
-Установи ffmpeg и добавь его в `PATH`, чтобы команда `ffprobe` запускалась из терминала.
+Install ffmpeg and add it to `PATH` so `ffprobe` is available.
 
-### `trackerhelper`: bit depth / sample rate = `unknown` или `mixed`
-Это нормально:
-- некоторые форматы/файлы не содержат нужных полей, или ffprobe их не возвращает;
-- внутри релиза могут быть разные параметры → `mixed`.
+### `trackerhelper`: bit depth / sample rate = `unknown` or `mixed`
+This is normal:
+- some formats do not provide these fields or ffprobe does not return them;
+- a release may contain mixed parameters so it shows `mixed`.
