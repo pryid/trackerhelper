@@ -30,13 +30,17 @@ def build_normalized_name(
     return clean_name_part(f"{year} - {artist} - {album}")
 
 
+def release_data_sort_key(item: tuple[Path, list[Path]]) -> str:
+    return item[0].as_posix().lower()
+
+
 def normalize_release_folders(root: Path, exts: set[str], apply: bool) -> int:
     ffprobe = FfprobeClient()
     release_data = [
         (folder, files)
         for folder, files in iter_release_audio_files(root, exts, include_root=True)
     ]
-    release_data.sort(key=lambda x: x[0].as_posix().lower())
+    release_data.sort(key=release_data_sort_key)
 
     if not release_data:
         print("No audio files found for normalization.")

@@ -40,6 +40,15 @@ def normalize_exts(user_exts: list[str]) -> set[str]:
     return exts
 
 
+def release_item_sort_key(item: tuple[Path, object]) -> tuple[tuple[int, str], str]:
+    rel_path = item[0]
+    return (group_sort_index(group_key(rel_path)), rel_path.as_posix().lower())
+
+
+def bbcode_release_sort_key(rel: ReleaseBBCode) -> tuple[int, str]:
+    return (rel.year or 9999, str(rel.title).lower())
+
+
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(
         description="Sum durations grouped per release folder; show bit depth + sample rate; optionally generate BBCode release template."
@@ -111,7 +120,7 @@ def run_stats(args: argparse.Namespace) -> int:
         rel_path = rel.path.relative_to(root)
         items.append((rel_path, rel))
 
-    items.sort(key=lambda x: (group_sort_index(group_key(x[0])), x[0].as_posix().lower()))
+    items.sort(key=release_item_sort_key)
 
     current_group = None
     for rel_path, rel in items:
@@ -218,7 +227,7 @@ def run_release(args: argparse.Namespace) -> int:
         )
 
     for g, lst in grouped.items():
-        lst.sort(key=lambda r: ((r.year or 9999), str(r.title).lower()))
+        lst.sort(key=bbcode_release_sort_key)
 
     total_releases = len(releases)
     lang = args.bbcode_lang

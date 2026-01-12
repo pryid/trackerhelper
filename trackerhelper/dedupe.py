@@ -42,6 +42,14 @@ class TrackKey:
     fingerprint: str
 
 
+def fp_row_sort_key(row: Tuple[str, str, str]) -> str:
+    return row[2]
+
+
+def canon_release_sort_key(rel: str) -> Tuple[int, int, str]:
+    return (-score_release(rel), len(rel), rel)
+
+
 def which_or_die(cmd: str) -> None:
     if shutil.which(cmd) is None:
         print(f"ERROR: '{cmd}' not found in PATH. Install chromaprint (fpcalc).", file=sys.stderr)
@@ -237,7 +245,7 @@ def run_dedupe(args: argparse.Namespace) -> int:
 
     # Fingerprints TSV
     tsv_path = out_dir / "discog_audiofp.tsv"
-    rows.sort(key=lambda x: x[2])
+    rows.sort(key=fp_row_sort_key)
     with tsv_path.open("w", encoding="utf-8") as f:
         for dur, fp, p in rows:
             f.write(f"{dur}\t{fp}\t{p}\n")
@@ -276,7 +284,7 @@ def run_dedupe(args: argparse.Namespace) -> int:
     for aset, group in by_set.items():
         if len(group) <= 1:
             continue
-        canon = sorted(group, key=lambda x: (-score_release(x), len(x), x))[0]
+        canon = sorted(group, key=canon_release_sort_key)[0]
         canon_of_set[aset] = canon
         for g in group:
             if g != canon:
@@ -291,7 +299,10 @@ def run_dedupe(args: argparse.Namespace) -> int:
         A = release_keys[a]
         if not A:
             continue
-        rare_track = min(A, key=lambda k: len(track_to_releases[k]))
+        def track_rarity_key(track_key: TrackKey) -> int:
+            return len(track_to_releases[track_key])
+
+        rare_track = min(A, key=track_rarity_key)
         candidates = track_to_releases[rare_track] - {a}
         best = None
         for b in candidates:

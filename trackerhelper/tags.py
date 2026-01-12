@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from collections import Counter
 from pathlib import Path
+from typing import Protocol
 
 from .constants import TAG_KEYS_ALBUM, TAG_KEYS_ALBUM_ARTIST, TAG_KEYS_ARTIST
-from .ffprobe_utils import FfprobeClient
 from .utils import clean_name_part
 
 
@@ -16,16 +16,26 @@ def tag_value(tags: dict[str, str], keys: list[str]) -> str | None:
     return None
 
 
+def count_sort_key(item: tuple[str, int]) -> tuple[int, int, str]:
+    val, count = item
+    return (count, -len(val), val.lower())
+
+
 def most_common_str(values: list[str]) -> str | None:
     if not values:
         return None
     counts = Counter(values)
-    return max(counts.items(), key=lambda x: (x[1], -len(x[0]), x[0].lower()))[0]
+    return max(counts.items(), key=count_sort_key)[0]
+
+
+class TagsReader(Protocol):
+    def get_tags(self, path: Path) -> dict[str, str]:
+        ...
 
 
 def release_metadata_from_tags(
     audio_files: list[Path],
-    ffprobe: FfprobeClient,
+    ffprobe: TagsReader,
 ) -> tuple[str | None, str | None]:
     album_values: list[str] = []
     album_artist_values: list[str] = []
