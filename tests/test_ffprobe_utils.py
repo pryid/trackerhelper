@@ -13,6 +13,7 @@ class FfprobeUtilsTests(unittest.TestCase):
             ],
         }
         dur, sr, bit = parse_audio_info(data)
+        assert dur is not None
         self.assertAlmostEqual(dur, 123.456)
         self.assertEqual(sr, 44100)
         self.assertEqual(bit, 16)

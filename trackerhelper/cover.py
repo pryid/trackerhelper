@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 try:
     import requests
 except ImportError:  # pragma: no cover
-    requests = None  # type: ignore
+    requests = None
 
 
 class FastPicUploadError(RuntimeError):

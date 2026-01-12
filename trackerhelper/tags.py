@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from collections import Counter
 from pathlib import Path
-from typing import Protocol
 
 from .constants import TAG_KEYS_ALBUM, TAG_KEYS_ALBUM_ARTIST, TAG_KEYS_ARTIST
+from .ffprobe_utils import TagsReader
 from .utils import clean_name_part
 
 
@@ -26,11 +26,6 @@ def most_common_str(values: list[str]) -> str | None:
         return None
     counts = Counter(values)
     return max(counts.items(), key=count_sort_key)[0]
-
-
-class TagsReader(Protocol):
-    def get_tags(self, path: Path) -> dict[str, str]:
-        ...
 
 
 def release_metadata_from_tags(

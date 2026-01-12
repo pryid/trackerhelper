@@ -1,10 +1,11 @@
 import unittest
 from pathlib import Path
 
+from trackerhelper.ffprobe_utils import TagsReader
 from trackerhelper.tags import release_metadata_from_tags
 
 
-class DummyFfprobe:
+class DummyFfprobe(TagsReader):
     def __init__(self, tags_by_path):
         self.tags_by_path = tags_by_path
 

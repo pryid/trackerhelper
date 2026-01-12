@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 from pathlib import Path
+from typing import Protocol
 
 
 def normalize_tag_key(s: str) -> str:
@@ -55,7 +56,12 @@ def parse_tags(data: dict) -> dict[str, str]:
     return tags
 
 
-class FfprobeClient:
+class TagsReader(Protocol):
+    def get_tags(self, file_path: Path) -> dict[str, str]:
+        ...
+
+
+class FfprobeClient(TagsReader):
     def __init__(self) -> None:
         self._audio_cache: dict[str, tuple[float | None, int | None, int | None]] = {}
         self._tag_cache: dict[str, dict[str, str]] = {}

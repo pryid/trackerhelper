@@ -2,6 +2,7 @@ import json
 import unittest
 from pathlib import Path
 
+from trackerhelper.ffprobe_utils import TagsReader
 from trackerhelper.tags import release_metadata_from_tags
 from trackerhelper.utils import parse_release_title_and_year
 
@@ -12,7 +13,7 @@ def load_dataset() -> dict:
     return json.loads(DATA_PATH.read_text(encoding="utf-8"))
 
 
-class DatasetFfprobe:
+class DatasetFfprobe(TagsReader):
     def __init__(self, tag_map: dict[str, dict[str, str]]) -> None:
         self.tag_map = tag_map
 
@@ -57,6 +58,7 @@ class ClamsCasinoDatasetTests(unittest.TestCase):
             None,
         )
         self.assertIsNotNone(rel, "Expected 2018 Lil Peep release in dataset.")
+        assert rel is not None
         name = Path(rel["rel_path"]).name
         title, year = parse_release_title_and_year(name)
         self.assertEqual(year, 2018)
@@ -72,6 +74,7 @@ class ClamsCasinoDatasetTests(unittest.TestCase):
             None,
         )
         self.assertIsNotNone(rel, "Expected Moon Trip Radio release in dataset.")
+        assert rel is not None
         audio_files = [
             self.root / Path(rel["rel_path"]) / track["rel_path"]
             for track in rel["tracks"]
