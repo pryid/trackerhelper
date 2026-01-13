@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from ..args import add_common_audio_args, normalize_exts
+from ..args import add_common_audio_args, add_no_progress_arg, normalize_exts
 from ..common import ensure_executable, ensure_root
 from ...app.stats import collect_stats, collect_synthetic_stats
 from ..progress import progress_bar
@@ -16,6 +16,7 @@ def add_parser(subparsers) -> argparse.ArgumentParser:
     """Register the stats subcommand parser."""
     parser = subparsers.add_parser("stats", help="Print grouped stats.")
     add_common_audio_args(parser, include_root=True)
+    add_no_progress_arg(parser)
     parser.add_argument(
         "--synthetic",
         action="store_true",
@@ -44,8 +45,17 @@ def run(args: argparse.Namespace) -> int:
         releases, summary = collect_synthetic_stats(root)
     else:
         ffprobe = FfprobeClient()
-        with progress_bar("Reading audio metadata") as progress:
-            releases, summary = collect_stats(root, exts, args.include_root, ffprobe, progress=progress)
+        if args.no_progress:
+            releases, summary = collect_stats(root, exts, args.include_root, ffprobe)
+        else:
+            with progress_bar("Reading audio metadata") as progress:
+                releases, summary = collect_stats(
+                    root,
+                    exts,
+                    args.include_root,
+                    ffprobe,
+                    progress=progress,
+                )
 
     if not releases:
         print("No audio files found.")

@@ -4,7 +4,7 @@ import argparse
 import logging
 from pathlib import Path
 
-from ..args import add_common_audio_args, normalize_exts
+from ..args import add_common_audio_args, add_no_progress_arg, normalize_exts
 from ..common import ensure_executable, ensure_root
 from ...app.release import build_release_bbcode
 from ..progress import progress_bar
@@ -16,6 +16,7 @@ def add_parser(subparsers) -> argparse.ArgumentParser:
     """Register the release subcommand parser."""
     parser = subparsers.add_parser("release", help="Generate BBCode release template.")
     add_common_audio_args(parser, include_root=True)
+    add_no_progress_arg(parser)
     parser.add_argument("--dr-dir", default=None, help="Directory with DR reports (e.g. *_dr.txt).")
     parser.add_argument(
         "--synthetic",
@@ -57,7 +58,7 @@ def run(args: argparse.Namespace) -> int:
             lang=args.lang,
         )
     else:
-        with progress_bar("Reading audio metadata") as progress:
+        if args.no_progress:
             result = build_release_bbcode(
                 root,
                 exts,
@@ -66,8 +67,19 @@ def run(args: argparse.Namespace) -> int:
                 test_mode=False,
                 no_cover=args.no_cover,
                 lang=args.lang,
-                progress=progress,
             )
+        else:
+            with progress_bar("Reading audio metadata") as progress:
+                result = build_release_bbcode(
+                    root,
+                    exts,
+                    args.include_root,
+                    dr_dir=dr_dir,
+                    test_mode=False,
+                    no_cover=args.no_cover,
+                    lang=args.lang,
+                    progress=progress,
+                )
 
     if result is None:
         print("No audio files found.")

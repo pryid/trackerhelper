@@ -86,6 +86,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ## Usage
 
 More examples: `examples/README.md`.
+Progress bars are enabled by default; disable with `--no-progress`.
 
 ## 1) DR logs via foobar2000 (`dr.ps1`)
 

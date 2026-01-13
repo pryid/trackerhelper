@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from ..args import add_common_audio_args, normalize_exts
+from ..args import add_common_audio_args, add_no_progress_arg, normalize_exts
 from ..common import ensure_executable, ensure_root
 from ...app.normalize import apply_normalization, plan_normalization
 from ..progress import progress_bar
@@ -13,6 +13,7 @@ def add_parser(subparsers) -> argparse.ArgumentParser:
     """Register the normalize subcommand parser."""
     parser = subparsers.add_parser("normalize", help="Normalize release folder names (dry run by default).")
     add_common_audio_args(parser)
+    add_no_progress_arg(parser)
     parser.add_argument("--apply", dest="apply", action="store_true", help="Apply rename changes.")
     return parser
 
@@ -38,8 +39,11 @@ def run(args: argparse.Namespace) -> int:
         return 3
 
     exts = normalize_exts(args.ext)
-    with progress_bar("Reading tags") as progress:
-        plan = plan_normalization(root, exts, progress=progress)
+    if args.no_progress:
+        plan = plan_normalization(root, exts)
+    else:
+        with progress_bar("Reading tags") as progress:
+            plan = plan_normalization(root, exts, progress=progress)
 
     if not plan.actions and not plan.skipped:
         print("No audio files found for normalization.")

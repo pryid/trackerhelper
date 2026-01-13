@@ -1,5 +1,5 @@
 """
-Synthetic data for --test mode.
+Synthetic data for --synthetic mode.
 
 These are NOT unit tests. It is a small fixture set that allows you to:
 - verify console output formatting,

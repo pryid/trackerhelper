@@ -23,6 +23,7 @@ def build_parser() -> argparse.ArgumentParser:
         )
     )
     parser.add_argument("--version", action="version", version=f"trackerhelper {__version__}")
+    parser.add_argument("--no-progress", action="store_true", help="Disable progress output.")
     subparsers = parser.add_subparsers(dest="command")
 
     stats_cmd.add_parser(subparsers)

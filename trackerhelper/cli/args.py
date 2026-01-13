@@ -31,6 +31,10 @@ def add_include_root_arg(parser: argparse.ArgumentParser) -> None:
     """Add the --include-root flag for root-level tracks."""
     parser.add_argument("--include-root", action="store_true", help="Include tracks directly inside the root folder.")
 
+def add_no_progress_arg(parser: argparse.ArgumentParser) -> None:
+    """Add the --no-progress flag."""
+    parser.add_argument("--no-progress", action="store_true", help="Disable progress output.")
+
 
 def add_common_audio_args(parser: argparse.ArgumentParser, *, include_root: bool = False) -> None:
     """Add common path/extension args to a parser."""

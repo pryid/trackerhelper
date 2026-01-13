@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from ..args import normalize_exts
+from ..args import add_no_progress_arg, normalize_exts
 from ...app.dedupe import default_jobs, run_dedupe
 from ..progress import progress_bar
 from ...domain.constants import AUDIO_EXTS_DEFAULT
@@ -54,6 +54,7 @@ def add_parser(subparsers) -> argparse.ArgumentParser:
         action="store_true",
         help="Reduce stdout output.",
     )
+    add_no_progress_arg(parser)
     return parser
 
 
@@ -73,6 +74,16 @@ def run(args: argparse.Namespace) -> int:
             move_to=move_to,
             delete=args.delete,
             quiet=True,
+        )
+    if args.no_progress:
+        return run_dedupe(
+            roots=roots,
+            exts=exts,
+            out_dir=out_dir,
+            jobs=args.jobs,
+            move_to=move_to,
+            delete=args.delete,
+            quiet=False,
         )
 
     with progress_bar("Fingerprinting audio") as progress:

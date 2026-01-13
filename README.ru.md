@@ -83,6 +83,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
 ## Использование
+Прогресс по умолчанию включен; отключить можно флагом `--no-progress`.
 
 ## 1) Автосбор DR-логов через foobar2000 (`dr.ps1`)
 
