@@ -6,7 +6,7 @@
 - `trackerhelper/app/` orchestrates use-cases and side effects (scan, ffprobe, uploads).
 - `trackerhelper/domain/` holds pure dataclasses and business logic (`models`, `normalize`, `tags`, `grouping`, `dedupe`).
 - `trackerhelper/infra/` contains filesystem + external tool adapters (`scan`, `ffprobe`, `cover`, `dr`, `fingerprint`).
-- `trackerhelper/formatting/` owns output formatting (`bbcode`, `bbcode_templates`, `tracklist`).
+- `trackerhelper/formatting/` owns output formatting (`bbcode`, `bbcode_templates`, `tracklist`, `stats`, `dedupe`).
 
 ## External tools
 - `ffprobe` is required for `stats`, `release`, and `normalize` (tags, durations).

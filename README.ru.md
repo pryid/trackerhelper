@@ -83,7 +83,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
 ## Использование
-Прогресс по умолчанию включен; отключить можно флагом `--no-progress`.
+Прогресс показывается только в TTY; отключить можно флагом `--no-progress`.
 
 ## 1) Автосбор DR-логов через foobar2000 (`dr.ps1`)
 
@@ -231,6 +231,8 @@ trackerhelper dedupe --roots Albums Singles
 - `--csv` — вывести CSV в stdout
 - `--plan-out PATH` — сохранить план в JSON
 - `--apply-plan PATH` — применить ранее сохраненный план
+
+Примечание: `--apply-plan` требует `--move-to` или `--delete`.
 
 `--synthetic` использует данные из `trackerhelper/app/synthetic_dataset.py` и позволяет быстро проверить, как выглядит консольный вывод и BBCode, не имея реальных файлов.
 

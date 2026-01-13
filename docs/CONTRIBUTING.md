@@ -16,7 +16,7 @@ Thanks for contributing!
 - `trackerhelper/app/` for use-case orchestration.
 - `trackerhelper/domain/` for business logic and dataclasses.
 - `trackerhelper/infra/` for filesystem and external tools.
-- `trackerhelper/formatting/` for BBCode and output helpers.
+- `trackerhelper/formatting/` for BBCode and output helpers (stats/dedupe renderers too).
 
 ## Style notes
 - Prefer small helpers with clear names over inline lambdas.

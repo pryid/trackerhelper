@@ -86,7 +86,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ## Usage
 
 More examples: `examples/README.md`.
-Progress bars are enabled by default; disable with `--no-progress`.
+Progress bars are shown only on TTY; disable with `--no-progress`.
 
 ## 1) DR logs via foobar2000 (`dr.ps1`)
 
@@ -230,6 +230,8 @@ Options:
 - `--csv` output CSV to stdout
 - `--plan-out PATH` write a plan JSON to apply later
 - `--apply-plan PATH` apply a previously generated plan
+
+Note: `--apply-plan` requires either `--move-to` or `--delete`.
 
 `--synthetic` uses synthetic data from `trackerhelper/app/synthetic_dataset.py` and lets you check formatting without real files or ffprobe.
 
