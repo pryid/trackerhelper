@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import argparse
 
-from .core.constants import AUDIO_EXTS_DEFAULT
+from ..domain.constants import AUDIO_EXTS_DEFAULT
 
 
 def normalize_exts(user_exts: list[str], base_exts: set[str] | None = None) -> set[str]:
@@ -18,8 +18,8 @@ def normalize_exts(user_exts: list[str], base_exts: set[str] | None = None) -> s
 
 
 def add_path_arg(parser: argparse.ArgumentParser) -> None:
-    """Add a shared positional path argument."""
-    parser.add_argument("path", nargs="?", default=".", help="Root folder (default: current directory).")
+    """Add a shared positional root argument."""
+    parser.add_argument("root", nargs="?", default=".", help="Root folder (default: current directory).")
 
 
 def add_ext_arg(parser: argparse.ArgumentParser) -> None:

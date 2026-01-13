@@ -12,14 +12,12 @@ class ReleaseScan:
     audio_files: list[Path]
 
 
-def iter_release_audio_files(
+def iter_release_scans(
     root: Path,
     exts: set[str],
     include_root: bool,
 ) -> Iterable[ReleaseScan]:
-    """
-    Iterate folders and return audio files inside each folder.
-    """
+    """Iterate folders and return audio files inside each folder."""
     for dirpath, _, filenames in os.walk(root):
         folder = Path(dirpath)
         if folder == root and not include_root:
@@ -46,3 +44,16 @@ def iter_audio_files(roots: Iterable[Path], exts: set[str]) -> Iterable[Path]:
                 p = Path(dirpath) / fn
                 if p.is_file() and p.suffix.lower() in exts:
                     yield p
+
+
+def release_root_for_path(path: Path, roots: Iterable[Path]) -> Path | None:
+    """Return the release folder for a file under the given roots."""
+    for root in roots:
+        try:
+            rel = path.relative_to(root)
+        except ValueError:
+            continue
+        if not rel.parts:
+            return root
+        return root / rel.parts[0]
+    return None

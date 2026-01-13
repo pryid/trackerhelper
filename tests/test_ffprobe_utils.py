@@ -1,6 +1,6 @@
 import unittest
 
-from trackerhelper.io.ffprobe_utils import parse_audio_info, parse_tags
+from trackerhelper.infra.ffprobe import parse_audio_info, parse_tags
 
 
 class FfprobeUtilsTests(unittest.TestCase):

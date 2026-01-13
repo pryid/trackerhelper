@@ -11,9 +11,10 @@
 - `docs/CONTRIBUTING.md`
 
 Структура кода:
-- `trackerhelper/commands/` — CLI-обвязка команд
-- `trackerhelper/core/` — ядро логики и датаклассы
-- `trackerhelper/io/` — файловая система и внешние инструменты
+- `trackerhelper/cli/` — парсинг CLI и команды
+- `trackerhelper/app/` — оркестрация use-case сценариев
+- `trackerhelper/domain/` — чистые модели и бизнес-логика
+- `trackerhelper/infra/` — внешние инструменты и файловая система
 - `trackerhelper/formatting/` — форматирование BBCode и вывода
 
 ## Требования
@@ -178,11 +179,7 @@ trackerhelper release "/path/to/DiscographyRoot"
 
 По умолчанию BBCode-лейблы на русском. Для английской версии:
 ```bash
-trackerhelper release "/path/to/DiscographyRoot" --bbcode-lang en
-```
-или:
-```bash
-trackerhelper release "/path/to/DiscographyRoot" --bbcode-en
+trackerhelper release "/path/to/DiscographyRoot" --lang en
 ```
 
 Отключить загрузку обложек на FastPic:
@@ -200,7 +197,7 @@ trackerhelper release "/path/to/DiscographyRoot" --no-cover
 Если у тебя уже есть `*_dr.txt` (например, собранные `dr.ps1`), укажи папку с логами:
 
 ```bash
-trackerhelper release "/path/to/DiscographyRoot" --dr "C:\Users\<you>\Music\DR"
+trackerhelper release "/path/to/DiscographyRoot" --dr-dir "C:\Users\<you>\Music\DR"
 ```
 
 Скрипт пытается сопоставить DR-файл с папкой релиза по имени (несколько вариантов имён + нормализация пробелов/дефисов). Если отчёт не найден — в BBCode остаётся `info`.
@@ -208,10 +205,10 @@ trackerhelper release "/path/to/DiscographyRoot" --dr "C:\Users\<you>\Music\DR"
 ### Автоподстановка обложек через FastPic (опционально)
 Если в папке релиза лежит `cover.jpg` (регистр неважен), то в команде `release` утилита загрузит обложку на FastPic и подставит прямую ссылку в BBCode. Если обложка не найдена или загрузка не удалась — остаётся `COVER_URL`.
 
-## 3) Режим проверки форматирования без ffprobe/ФС (`--test`)
+## 3) Режим проверки форматирования без ffprobe/ФС (`--synthetic`)
 ```bash
-trackerhelper stats "/any/path" --test
-trackerhelper release "/any/path" --test
+trackerhelper stats "/any/path" --synthetic
+trackerhelper release "/any/path" --synthetic
 ```
 
 ## 4) Поиск дублей релизов по аудио-отпечаткам (`trackerhelper dedupe`)
@@ -223,7 +220,7 @@ trackerhelper dedupe --roots Albums Singles
 - `--move-to DIR` — переместить найденные релизы в указанную папку
 - `--delete` — удалить найденные релизы (опасно)
 
-`--test` использует данные из `trackerhelper/core/synthetic_dataset.py` и позволяет быстро проверить, как выглядит консольный вывод и BBCode, не имея реальных файлов.
+`--synthetic` использует данные из `trackerhelper/app/synthetic_dataset.py` и позволяет быстро проверить, как выглядит консольный вывод и BBCode, не имея реальных файлов.
 
 ## Troubleshooting
 

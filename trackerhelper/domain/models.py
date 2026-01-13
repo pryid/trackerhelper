@@ -37,9 +37,6 @@ class ReleaseGroup:
     name: str
     releases: list[Release] = field(default_factory=list)
 
-
-
-
 @dataclass
 class StatsSummary:
     total_seconds: float
@@ -58,6 +55,8 @@ class ReleaseBBCode:
     tracklist: list[str]
     dr: str | None
     cover_url: str | None = None
+
+
 @dataclass
 class ReleaseGroupBBCode:
     name: str

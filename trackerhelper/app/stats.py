@@ -3,23 +3,22 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from ..io.ffprobe_utils import FfprobeClient
-from .models import Release, StatsSummary, Track
-from ..io.scan import iter_release_audio_files
-from .utils import extract_years_from_text
+from ..domain.models import Release, StatsSummary, Track
+from ..domain.utils import extract_years_from_text
+from ..infra.ffprobe import AudioInfoReader
+from ..infra.scan import iter_release_scans
+from .synthetic_dataset import load_synthetic_cases, make_track_paths
 
 logger = logging.getLogger(__name__)
 
 
-def collect_real_stats(
+def collect_stats(
     root: Path,
     exts: set[str],
     include_root: bool,
-    ffprobe: FfprobeClient,
+    audio_reader: AudioInfoReader,
 ) -> tuple[list[Release], StatsSummary]:
-    """
-    Collect stats from the real filesystem plus ffprobe.
-    """
+    """Collect stats from the filesystem plus ffprobe."""
     releases: list[Release] = []
     summary = StatsSummary(
         total_seconds=0.0,
@@ -30,7 +29,7 @@ def collect_real_stats(
         all_years=[],
     )
 
-    for scan in iter_release_audio_files(root, exts, include_root):
+    for scan in iter_release_scans(root, exts, include_root):
         folder = scan.path
         audio_files = scan.audio_files
         folder_sum = 0.0
@@ -41,7 +40,7 @@ def collect_real_stats(
         tracks: list[Track] = []
 
         for f in audio_files:
-            dur, sr, bit = ffprobe.get_audio_info(f)
+            dur, sr, bit = audio_reader.get_audio_info(f)
             tracks.append(
                 Track(
                     path=f,
@@ -89,12 +88,7 @@ def collect_real_stats(
 
 
 def collect_synthetic_stats(root: Path) -> tuple[list[Release], StatsSummary]:
-    """
-    Synthetic dataset to test formatting without ffprobe or filesystem access.
-    Data lives in synthetic_dataset.py.
-    """
-    from .synthetic_dataset import load_synthetic_cases, make_track_paths
-
+    """Synthetic dataset to test formatting without ffprobe or filesystem access."""
     releases: list[Release] = []
     summary = StatsSummary(
         total_seconds=0.0,

@@ -1,12 +1,12 @@
 # Architecture
 
 ## Overview
-- `trackerhelper/cli.py` is the single entry point. It wires subcommands and logging.
-- `trackerhelper/commands/` contains one module per CLI command (`stats`, `release`, `normalize`, `dedupe`).
-- `trackerhelper/core/` holds core dataclasses and business logic (`models`, `stats`, `normalize`, `tags`, `utils`, `grouping`).
-- `trackerhelper/io/` contains filesystem + external tool helpers (`scan`, `ffprobe_utils`, `cover`, `dr_utils`).
+- `trackerhelper/cli/main.py` is the entry point. It wires subcommands and logging.
+- `trackerhelper/cli/commands/` contains one module per CLI command (`stats`, `release`, `normalize`, `dedupe`).
+- `trackerhelper/app/` orchestrates use-cases and side effects (scan, ffprobe, uploads).
+- `trackerhelper/domain/` holds pure dataclasses and business logic (`models`, `normalize`, `tags`, `grouping`, `dedupe`).
+- `trackerhelper/infra/` contains filesystem + external tool adapters (`scan`, `ffprobe`, `cover`, `dr`, `fingerprint`).
 - `trackerhelper/formatting/` owns output formatting (`bbcode`, `bbcode_templates`, `tracklist`).
-- `trackerhelper/dedupe_*.py` splits fingerprinting, scan helpers, logic, and reporting.
 
 ## External tools
 - `ffprobe` is required for `stats`, `release`, and `normalize` (tags, durations).
@@ -14,6 +14,8 @@
 - `requests` is optional and only used for FastPic cover uploads.
 
 ## Layout
-- `trackerhelper/commands/` owns CLI parsing and orchestration.
-- `trackerhelper/core/`, `trackerhelper/io/`, and `trackerhelper/formatting/` contain reusable logic.
+- `trackerhelper/cli/` owns CLI parsing and orchestration.
+- `trackerhelper/app/` is the application layer.
+- `trackerhelper/domain/` and `trackerhelper/formatting/` contain reusable logic.
+- `trackerhelper/infra/` is the integration layer for external tools/filesystem.
 - `tests/` contains unit tests and dataset fixtures (excluded from sdist).

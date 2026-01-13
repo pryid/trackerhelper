@@ -12,9 +12,10 @@ Thanks for contributing!
    `ty check .`
 
 ## Project layout
-- `trackerhelper/commands/` for CLI commands.
-- `trackerhelper/core/` for business logic and dataclasses.
-- `trackerhelper/io/` for filesystem and external tools.
+- `trackerhelper/cli/` for CLI commands and parsing.
+- `trackerhelper/app/` for use-case orchestration.
+- `trackerhelper/domain/` for business logic and dataclasses.
+- `trackerhelper/infra/` for filesystem and external tools.
 - `trackerhelper/formatting/` for BBCode and output helpers.
 
 ## Style notes

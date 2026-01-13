@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "trackerhelper"
-version = "0.3.1"
+version = "0.4.0"
 description = "Utilities for music discography folders (stats, BBCode, normalize)."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -29,7 +29,7 @@ Issues = "https://github.com/pryid/trackerhelper/issues"
 dev = ["ruff", "ty", "types-requests"]
 
 [project.scripts]
-trackerhelper = "trackerhelper.cli:main"
+trackerhelper = "trackerhelper.cli.main:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

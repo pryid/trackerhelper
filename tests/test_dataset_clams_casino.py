@@ -2,24 +2,14 @@ import json
 import unittest
 from pathlib import Path
 
-from trackerhelper.io.ffprobe_utils import TagsReader
-from trackerhelper.core.tags import release_metadata_from_tags
-from trackerhelper.core.utils import parse_release_title_and_year
+from trackerhelper.domain.tags import select_release_metadata
+from trackerhelper.domain.utils import parse_release_title_and_year
 
 DATA_PATH = Path(__file__).resolve().parent / "fixtures" / "clams_casino_dataset.json"
 
 
 def load_dataset() -> dict:
     return json.loads(DATA_PATH.read_text(encoding="utf-8"))
-
-
-class DatasetFfprobe(TagsReader):
-    def __init__(self, tag_map: dict[str, dict[str, str]]) -> None:
-        self.tag_map = tag_map
-
-    def get_tags(self, file_path: Path) -> dict[str, str]:
-        tags = self.tag_map.get(file_path.as_posix())
-        return tags if tags is not None else {}
 
 
 def build_tag_map(root: Path, releases: list[dict]) -> dict[str, dict[str, str]]:
@@ -38,7 +28,6 @@ class ClamsCasinoDatasetTests(unittest.TestCase):
         cls.data = load_dataset()
         cls.root = Path("dataset_root")
         cls.tag_map = build_tag_map(cls.root, cls.data["releases"])
-        cls.ffprobe = DatasetFfprobe(cls.tag_map)
 
     def test_groups_present(self):
         groups = {
@@ -80,7 +69,8 @@ class ClamsCasinoDatasetTests(unittest.TestCase):
             self.root / Path(rel["rel_path"]) / track["rel_path"]
             for track in rel["tracks"]
         ]
-        artist, album = release_metadata_from_tags(audio_files, self.ffprobe)
+        tags_list = [self.tag_map.get(p.as_posix(), {}) for p in audio_files]
+        artist, album = select_release_metadata(tags_list)
         self.assertEqual(artist, "Clams Casino")
         self.assertEqual(album, "Moon Trip Radio")
 

@@ -3,12 +3,12 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from ..cli_args import add_common_audio_args, normalize_exts
-from .common import ensure_ffprobe, ensure_root
-from ..core.stats import collect_real_stats, collect_synthetic_stats
-from ..core.utils import bit_label, format_hhmmss, release_word, sr_label, track_word
-from ..core.grouping import group_releases
-from ..io.ffprobe_utils import FfprobeClient
+from ..args import add_common_audio_args, normalize_exts
+from ..common import ensure_executable, ensure_root
+from ...app.stats import collect_stats, collect_synthetic_stats
+from ...domain.grouping import group_releases
+from ...domain.utils import bit_label, format_hhmmss, release_word, sr_label, track_word
+from ...infra.ffprobe import FfprobeClient
 
 
 def add_parser(subparsers) -> argparse.ArgumentParser:
@@ -16,7 +16,7 @@ def add_parser(subparsers) -> argparse.ArgumentParser:
     parser = subparsers.add_parser("stats", help="Print grouped stats.")
     add_common_audio_args(parser, include_root=True)
     parser.add_argument(
-        "--test",
+        "--synthetic",
         action="store_true",
         help="Generate fake data (no ffprobe/files needed) to test output formatting.",
     )
@@ -30,20 +30,20 @@ def _format_release_path(root: Path, release_path: Path) -> str:
 
 def run(args: argparse.Namespace) -> int:
     """Execute the stats command."""
-    root = Path(args.path).expanduser().resolve()
+    root = Path(args.root).expanduser().resolve()
 
-    if not args.test and not ensure_root(root):
+    if not args.synthetic and not ensure_root(root):
         return 2
 
-    if not args.test and not ensure_ffprobe():
+    if not args.synthetic and not ensure_executable("ffprobe"):
         return 3
 
     exts = normalize_exts(args.ext)
-    if args.test:
+    if args.synthetic:
         releases, summary = collect_synthetic_stats(root)
     else:
         ffprobe = FfprobeClient()
-        releases, summary = collect_real_stats(root, exts, args.include_root, ffprobe)
+        releases, summary = collect_stats(root, exts, args.include_root, ffprobe)
 
     if not releases:
         print("No audio files found.")

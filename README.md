@@ -13,9 +13,10 @@ Project docs:
 - `docs/CONTRIBUTING.md`
 
 Code layout (developer notes):
-- `trackerhelper/commands/` CLI command wiring
-- `trackerhelper/core/` core logic and dataclasses
-- `trackerhelper/io/` filesystem + external tool helpers
+- `trackerhelper/cli/` CLI parsing and subcommands
+- `trackerhelper/app/` use-case orchestration
+- `trackerhelper/domain/` pure models and business rules
+- `trackerhelper/infra/` external tools and filesystem adapters
 - `trackerhelper/formatting/` BBCode and output formatting
 
 ## Requirements
@@ -178,11 +179,7 @@ trackerhelper release "/path/to/DiscographyRoot"
 
 By default BBCode labels are Russian. Use English output:
 ```bash
-trackerhelper release "/path/to/DiscographyRoot" --bbcode-lang en
-```
-or:
-```bash
-trackerhelper release "/path/to/DiscographyRoot" --bbcode-en
+trackerhelper release "/path/to/DiscographyRoot" --lang en
 ```
 
 Disable FastPic cover upload:
@@ -199,7 +196,7 @@ Russian output uses `ЛЕЙБЛ` for the label placeholder, English output uses 
 ### Add DR reports to BBCode
 If you already have `*_dr.txt` (for example from `dr.ps1`), pass the log directory:
 ```bash
-trackerhelper release "/path/to/DiscographyRoot" --dr "C:\Users\<you>\Music\DR"
+trackerhelper release "/path/to/DiscographyRoot" --dr-dir "C:\Users\<you>\Music\DR"
 ```
 
 The tool tries to match DR logs by folder name (several name patterns plus whitespace/dash normalization). If no report is found, BBCode keeps `info`.
@@ -207,10 +204,10 @@ The tool tries to match DR logs by folder name (several name patterns plus white
 ### FastPic cover upload (optional)
 If the release folder contains `cover.jpg` (case-insensitive), `release` uploads the cover to FastPic and inserts the direct link. If not found or upload fails, it keeps `COVER_URL`.
 
-## 3) Formatting-only mode (`--test`)
+## 3) Formatting-only mode (`--synthetic`)
 ```bash
-trackerhelper stats "/any/path" --test
-trackerhelper release "/any/path" --test
+trackerhelper stats "/any/path" --synthetic
+trackerhelper release "/any/path" --synthetic
 ```
 
 ## 4) Detect duplicate releases by audio fingerprints (`trackerhelper dedupe`)
@@ -222,7 +219,7 @@ Options:
 - `--move-to DIR` move duplicate releases to a folder
 - `--delete` delete duplicate releases (dangerous)
 
-`--test` uses synthetic data from `trackerhelper/core/synthetic_dataset.py` and lets you check formatting without real files or ffprobe.
+`--synthetic` uses synthetic data from `trackerhelper/app/synthetic_dataset.py` and lets you check formatting without real files or ffprobe.
 
 ## Troubleshooting
 

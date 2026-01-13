@@ -59,12 +59,17 @@ def parse_tags(data: dict) -> dict[str, str]:
     return tags
 
 
+class AudioInfoReader(Protocol):
+    def get_audio_info(self, file_path: Path) -> tuple[float | None, int | None, int | None]:
+        ...
+
+
 class TagsReader(Protocol):
     def get_tags(self, file_path: Path) -> dict[str, str]:
         ...
 
 
-class FfprobeClient(TagsReader):
+class FfprobeClient(AudioInfoReader, TagsReader):
     def __init__(self) -> None:
         self._audio_cache: dict[str, tuple[float | None, int | None, int | None]] = {}
         self._tag_cache: dict[str, dict[str, str]] = {}

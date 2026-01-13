@@ -5,7 +5,7 @@ from multiprocessing import Pool
 from pathlib import Path
 from typing import Iterable
 
-from .dedupe_models import FingerprintRow
+from ..domain.dedupe import FingerprintRow
 
 
 def fpcalc_one(path: Path) -> FingerprintRow | None:
@@ -36,7 +36,7 @@ def fpcalc_one(path: Path) -> FingerprintRow | None:
     if not dur or not fp:
         return None
 
-    return FingerprintRow(duration=dur, fingerprint=fp, path=str(path))
+    return FingerprintRow(duration=dur, fingerprint=fp, path=path)
 
 
 def fingerprint_files(audio_files: Iterable[Path], jobs: int) -> list[FingerprintRow]:
@@ -51,4 +51,4 @@ def fingerprint_files(audio_files: Iterable[Path], jobs: int) -> list[Fingerprin
 
 def fp_row_sort_key(row: FingerprintRow) -> str:
     """Sort key for deterministic TSV output."""
-    return row.path
+    return row.path.as_posix()

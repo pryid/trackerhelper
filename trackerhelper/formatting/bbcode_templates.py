@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ..core.constants import (
+from ..domain.constants import (
     PLACEHOLDER_COVER,
     PLACEHOLDER_GENRE,
     PLACEHOLDER_INFO,
@@ -10,7 +10,7 @@ from ..core.constants import (
     PLACEHOLDER_SOURCE,
     PLACEHOLDER_YEAR,
 )
-from ..core.models import ReleaseBBCode
+from ..domain.models import ReleaseBBCode
 
 
 def release_header(

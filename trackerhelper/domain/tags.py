@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 from collections import Counter
-from pathlib import Path
+from typing import Iterable
 
 from .constants import TAG_KEYS_ALBUM, TAG_KEYS_ALBUM_ARTIST, TAG_KEYS_ARTIST
-from ..io.ffprobe_utils import TagsReader
 from .utils import clean_name_part
 
 
@@ -31,17 +30,13 @@ def most_common_str(values: list[str]) -> str | None:
     return max(counts.items(), key=count_sort_key)[0]
 
 
-def release_metadata_from_tags(
-    audio_files: list[Path],
-    ffprobe: TagsReader,
-) -> tuple[str | None, str | None]:
+def select_release_metadata(tags_list: Iterable[dict[str, str]]) -> tuple[str | None, str | None]:
     """Return (artist, album) picked from the most common tag values."""
     album_values: list[str] = []
     album_artist_values: list[str] = []
     artist_values: list[str] = []
 
-    for f in audio_files:
-        tags = ffprobe.get_tags(f)
+    for tags in tags_list:
         if not tags:
             continue
 

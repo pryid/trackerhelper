@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import logging
+import shutil
 from pathlib import Path
-
-from ..core.utils import which
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +14,8 @@ def ensure_root(root: Path) -> bool:
     return True
 
 
-def ensure_ffprobe() -> bool:
-    if which("ffprobe") is None:
-        logger.error("Error: ffprobe not found. Install ffmpeg (ffprobe) and retry.")
+def ensure_executable(name: str) -> bool:
+    if shutil.which(name) is None:
+        logger.error("Error: '%s' not found in PATH.", name)
         return False
     return True

@@ -1,15 +1,9 @@
 from __future__ import annotations
 
 import re
-import shutil
 from pathlib import Path
 
 from .constants import PREFERRED_GROUP_ORDER
-
-
-def which(cmd: str) -> str | None:
-    """Return the path to an executable in PATH or None."""
-    return shutil.which(cmd)
 
 
 def clean_name_part(s: str) -> str:

@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 import argparse
+import logging
 import sys
 
 from .commands import dedupe as dedupe_cmd
 from .commands import normalize as normalize_cmd
 from .commands import release as release_cmd
 from .commands import stats as stats_cmd
-from .logging_utils import setup_logging
+from ..logging_utils import setup_logging
+from .. import __version__
+
+logger = logging.getLogger(__name__)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -18,6 +22,7 @@ def build_parser() -> argparse.ArgumentParser:
             "optionally generate BBCode release template."
         )
     )
+    parser.add_argument("--version", action="version", version=f"trackerhelper {__version__}")
     subparsers = parser.add_subparsers(dest="command")
 
     stats_cmd.add_parser(subparsers)
@@ -31,6 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point."""
     setup_logging()
+    logger.info("trackerhelper %s", __version__)
     parser = build_parser()
     args = parser.parse_args(sys.argv[1:] if argv is None else argv)
 

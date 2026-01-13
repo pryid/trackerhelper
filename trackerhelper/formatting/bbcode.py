@@ -10,7 +10,7 @@ from .bbcode_templates import (
     single_header,
     single_tracklist,
 )
-from ..core.constants import (
+from ..domain.constants import (
     BBCODE_LABELS,
     GROUP_TITLES,
     PLACEHOLDER_COVER,
@@ -19,8 +19,8 @@ from ..core.constants import (
     PLACEHOLDER_TITLE,
     PLACEHOLDER_YEAR,
 )
-from ..core.models import ReleaseBBCode, ReleaseGroupBBCode
-from ..core.utils import group_sort_index
+from ..domain.models import ReleaseBBCode, ReleaseGroupBBCode
+from ..domain.utils import group_sort_index
 
 
 def _normalize_lang(lang: str | None) -> str:
