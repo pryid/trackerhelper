@@ -113,12 +113,13 @@ def print_summary(result: DedupeResult, paths: DedupeReportPaths, out_dir: Path)
         print("Post-check: OK (no remaining A subset of B relationships).")
 
 
-def apply_actions(result: DedupeResult, *, move_to: str | None, delete: bool, quiet: bool) -> None:
+def apply_actions(result: DedupeResult, *, move_to: str | None, delete: bool, quiet: bool) -> tuple[int, int]:
     """Move/delete redundant releases based on flags."""
+    moved = 0
+    deleted = 0
     if move_to:
         dst = Path(move_to)
         ensure_dir(dst)
-        moved = 0
         for r in sorted(result.redundant, key=lambda r: r.as_posix()):
             src = r
             if src.exists():
@@ -128,7 +129,6 @@ def apply_actions(result: DedupeResult, *, move_to: str | None, delete: bool, qu
             print(f"Moved releases: {moved} -> {dst}")
 
     if delete:
-        deleted = 0
         for r in sorted(result.redundant, key=lambda r: r.as_posix()):
             src = r
             if src.exists():
@@ -136,3 +136,5 @@ def apply_actions(result: DedupeResult, *, move_to: str | None, delete: bool, qu
                 deleted += 1
         if not quiet:
             print(f"Deleted releases: {deleted}")
+
+    return moved, deleted

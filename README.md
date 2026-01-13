@@ -157,6 +157,12 @@ trackerhelper stats "/path/to/DiscographyRoot" --include-root
 trackerhelper stats "/path/to/DiscographyRoot" --ext .ape --ext .tak
 ```
 
+### Machine-readable stats
+```bash
+trackerhelper stats "/path/to/DiscographyRoot" --json
+trackerhelper stats "/path/to/DiscographyRoot" --csv
+```
+
 ### Normalize release folder names
 Dry run by default:
 ```bash
@@ -220,6 +226,10 @@ trackerhelper dedupe --roots Albums Singles
 Options:
 - `--move-to DIR` move duplicate releases to a folder
 - `--delete` delete duplicate releases (dangerous)
+- `--json` output JSON to stdout
+- `--csv` output CSV to stdout
+- `--plan-out PATH` write a plan JSON to apply later
+- `--apply-plan PATH` apply a previously generated plan
 
 `--synthetic` uses synthetic data from `trackerhelper/app/synthetic_dataset.py` and lets you check formatting without real files or ffprobe.
 

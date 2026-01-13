@@ -113,3 +113,9 @@ def parse_release_title_and_year(folder_name: str) -> tuple[str, int | None]:
 def extract_years_from_text(s: str) -> list[int]:
     """Find years in any text (used for year_range based on folder structure)."""
     return [int(y) for y in re.findall(r"\b(19\d{2}|20\d{2})\b", s)]
+
+
+def parse_year_from_text(s: str) -> int | None:
+    """Extract the last 4-digit year from text."""
+    years = extract_years_from_text(s)
+    return years[-1] if years else None

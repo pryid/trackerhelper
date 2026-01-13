@@ -19,3 +19,18 @@ def ensure_executable(name: str) -> bool:
         logger.error("Error: '%s' not found in PATH.", name)
         return False
     return True
+
+
+def resolve_root(path_str: str) -> Path:
+    return Path(path_str).expanduser().resolve()
+
+
+def prepare_audio_root(path_str: str, *, skip_checks: bool) -> tuple[Path, int | None]:
+    root = resolve_root(path_str)
+    if skip_checks:
+        return root, None
+    if not ensure_root(root):
+        return root, 2
+    if not ensure_executable("ffprobe"):
+        return root, 3
+    return root, None

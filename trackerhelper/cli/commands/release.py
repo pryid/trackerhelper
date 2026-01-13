@@ -5,9 +5,9 @@ import logging
 from pathlib import Path
 
 from ..args import add_common_audio_args, add_no_progress_arg, normalize_exts
-from ..common import ensure_executable, ensure_root
+from ..common import prepare_audio_root
+from ..progress import run_with_progress
 from ...app.release import build_release_bbcode
-from ..progress import progress_bar
 
 logger = logging.getLogger(__name__)
 
@@ -30,13 +30,9 @@ def add_parser(subparsers) -> argparse.ArgumentParser:
 
 def run(args: argparse.Namespace) -> int:
     """Execute the release command."""
-    root = Path(args.root).expanduser().resolve()
-
-    if not args.synthetic and not ensure_root(root):
-        return 2
-
-    if not args.synthetic and not ensure_executable("ffprobe"):
-        return 3
+    root, err = prepare_audio_root(args.root, skip_checks=args.synthetic)
+    if err is not None:
+        return err
 
     exts = normalize_exts(args.ext)
 
@@ -58,8 +54,11 @@ def run(args: argparse.Namespace) -> int:
             lang=args.lang,
         )
     else:
-        if args.no_progress:
-            result = build_release_bbcode(
+        result = run_with_progress(
+            args.no_progress,
+            False,
+            "Reading audio metadata",
+            lambda progress: build_release_bbcode(
                 root,
                 exts,
                 args.include_root,
@@ -67,19 +66,9 @@ def run(args: argparse.Namespace) -> int:
                 test_mode=False,
                 no_cover=args.no_cover,
                 lang=args.lang,
-            )
-        else:
-            with progress_bar("Reading audio metadata") as progress:
-                result = build_release_bbcode(
-                    root,
-                    exts,
-                    args.include_root,
-                    dr_dir=dr_dir,
-                    test_mode=False,
-                    no_cover=args.no_cover,
-                    lang=args.lang,
-                    progress=progress,
-                )
+                progress=progress,
+            ),
+        )
 
     if result is None:
         print("No audio files found.")

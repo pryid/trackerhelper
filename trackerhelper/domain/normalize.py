@@ -1,12 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-import re
 from pathlib import Path
 
 from .utils import clean_name_part
-
-_YEAR_RE = re.compile(r"\b(19\d{2}|20\d{2})\b")
 
 
 @dataclass(frozen=True)
@@ -33,12 +30,6 @@ class NormalizationSkip:
 class NormalizationPlan:
     actions: list[NormalizationAction] = field(default_factory=list)
     skipped: list[NormalizationSkip] = field(default_factory=list)
-
-
-def parse_year_from_folder_name(name: str) -> int | None:
-    """Extract the last 4-digit year from a folder name."""
-    years = [int(m.group(1)) for m in _YEAR_RE.finditer(name)]
-    return years[-1] if years else None
 
 
 def build_normalized_name(

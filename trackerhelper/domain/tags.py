@@ -30,6 +30,25 @@ def most_common_str(values: list[str]) -> str | None:
     return max(counts.items(), key=count_sort_key)[0]
 
 
+def append_release_metadata_values(
+    tags: dict[str, str],
+    album_values: list[str],
+    album_artist_values: list[str],
+    artist_values: list[str],
+) -> None:
+    album = tag_value(tags, TAG_KEYS_ALBUM)
+    if album:
+        album_values.append(clean_name_part(album))
+
+    album_artist = tag_value(tags, TAG_KEYS_ALBUM_ARTIST)
+    if album_artist:
+        album_artist_values.append(clean_name_part(album_artist))
+
+    artist = tag_value(tags, TAG_KEYS_ARTIST)
+    if artist:
+        artist_values.append(clean_name_part(artist))
+
+
 def select_release_metadata(tags_list: Iterable[dict[str, str]]) -> tuple[str | None, str | None]:
     """Return (artist, album) picked from the most common tag values."""
     album_values: list[str] = []
@@ -37,20 +56,8 @@ def select_release_metadata(tags_list: Iterable[dict[str, str]]) -> tuple[str | 
     artist_values: list[str] = []
 
     for tags in tags_list:
-        if not tags:
-            continue
-
-        album = tag_value(tags, TAG_KEYS_ALBUM)
-        if album:
-            album_values.append(clean_name_part(album))
-
-        album_artist = tag_value(tags, TAG_KEYS_ALBUM_ARTIST)
-        if album_artist:
-            album_artist_values.append(clean_name_part(album_artist))
-
-        artist = tag_value(tags, TAG_KEYS_ARTIST)
-        if artist:
-            artist_values.append(clean_name_part(artist))
+        if tags:
+            append_release_metadata_values(tags, album_values, album_artist_values, artist_values)
 
     album = most_common_str(album_values)
     artist = most_common_str(album_artist_values) or most_common_str(artist_values)

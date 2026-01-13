@@ -1,14 +1,15 @@
 import unittest
 
-from trackerhelper.domain.normalize import build_normalized_name, parse_year_from_folder_name
+from trackerhelper.domain.normalize import build_normalized_name
+from trackerhelper.domain.utils import parse_year_from_text
 
 
 class NormalizeTests(unittest.TestCase):
     def test_parse_year_from_folder_name(self):
-        self.assertEqual(parse_year_from_folder_name("Album - 2018"), 2018)
-        self.assertEqual(parse_year_from_folder_name("2019 - Album"), 2019)
-        self.assertEqual(parse_year_from_folder_name("Reissue 1999 (2010)"), 2010)
-        self.assertIsNone(parse_year_from_folder_name("No Year"))
+        self.assertEqual(parse_year_from_text("Album - 2018"), 2018)
+        self.assertEqual(parse_year_from_text("2019 - Album"), 2019)
+        self.assertEqual(parse_year_from_text("Reissue 1999 (2010)"), 2010)
+        self.assertIsNone(parse_year_from_text("No Year"))
 
     def test_build_normalized_name_single(self):
         self.assertEqual(

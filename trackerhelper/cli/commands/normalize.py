@@ -4,9 +4,9 @@ import argparse
 from pathlib import Path
 
 from ..args import add_common_audio_args, add_no_progress_arg, normalize_exts
-from ..common import ensure_executable, ensure_root
+from ..common import prepare_audio_root
 from ...app.normalize import apply_normalization, plan_normalization
-from ..progress import progress_bar
+from ..progress import run_with_progress
 
 
 def add_parser(subparsers) -> argparse.ArgumentParser:
@@ -30,20 +30,17 @@ def _display_path(root: Path, p: Path) -> str:
 
 def run(args: argparse.Namespace) -> int:
     """Execute the normalize command."""
-    root = Path(args.root).expanduser().resolve()
-
-    if not ensure_root(root):
-        return 2
-
-    if not ensure_executable("ffprobe"):
-        return 3
+    root, err = prepare_audio_root(args.root, skip_checks=False)
+    if err is not None:
+        return err
 
     exts = normalize_exts(args.ext)
-    if args.no_progress:
-        plan = plan_normalization(root, exts)
-    else:
-        with progress_bar("Reading tags") as progress:
-            plan = plan_normalization(root, exts, progress=progress)
+    plan = run_with_progress(
+        args.no_progress,
+        False,
+        "Reading tags",
+        lambda progress: plan_normalization(root, exts, progress=progress),
+    )
 
     if not plan.actions and not plan.skipped:
         print("No audio files found for normalization.")

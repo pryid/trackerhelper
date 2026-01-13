@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Dict, List, Set
@@ -149,12 +150,23 @@ def find_redundant_releases(release_keys: Dict[Path, Set[TrackFingerprint]]) -> 
             redundant.discard(r)
 
     remaining = [r for r in releases if r not in redundant and release_keys[r]]
+    track_to_remaining: Dict[TrackFingerprint, Set[Path]] = defaultdict(set)
+    for r in remaining:
+        for k in release_keys[r]:
+            track_to_remaining[k].add(r)
+
     post_contained: List[ReleaseContainment] = []
     for a in remaining:
         A = release_keys[a]
-        for b in remaining:
-            if b == a:
-                continue
+        if not A:
+            continue
+
+        def post_rarity_key(track_key: TrackFingerprint) -> int:
+            return len(track_to_remaining[track_key])
+
+        rare_track = min(A, key=post_rarity_key)
+        candidates = track_to_remaining[rare_track] - {a}
+        for b in candidates:
             B = release_keys[b]
             if A != B and A.issubset(B):
                 post_contained.append(ReleaseContainment(subset=a, superset=b))

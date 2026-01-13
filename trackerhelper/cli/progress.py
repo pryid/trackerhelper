@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 import importlib
-from typing import Any, Iterator
+import sys
+from typing import Any, Callable, Iterator, TypeVar
 
 from ..app.progress import NullProgress, ProgressCallback
 
@@ -52,3 +53,22 @@ def progress_bar(description: str) -> Iterator[ProgressCallback]:
             yield tracker
         finally:
             tracker.finish()
+
+
+def progress_enabled(no_progress: bool) -> bool:
+    return (not no_progress) and sys.stdout.isatty()
+
+
+T = TypeVar("T")
+
+
+def run_with_progress(
+    no_progress: bool,
+    quiet: bool,
+    description: str,
+    fn: Callable[[ProgressCallback | None], T],
+) -> T:
+    if progress_enabled(no_progress) and not quiet:
+        with progress_bar(description) as progress:
+            return fn(progress)
+    return fn(None)

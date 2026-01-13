@@ -6,7 +6,7 @@ from pathlib import Path
 from ..domain.models import Release, StatsSummary, Track
 from ..domain.utils import extract_years_from_text
 from ..infra.ffprobe import AudioInfoReader
-from ..infra.scan import iter_release_scans
+from .scan import list_release_scans
 from .progress import ProgressCallback
 from .synthetic_dataset import load_synthetic_cases, make_track_paths
 
@@ -19,6 +19,7 @@ def collect_stats(
     include_root: bool,
     audio_reader: AudioInfoReader,
     progress: ProgressCallback | None = None,
+    include_tracks: bool = True,
 ) -> tuple[list[Release], StatsSummary]:
     """Collect stats from the filesystem plus ffprobe."""
     releases: list[Release] = []
@@ -31,7 +32,7 @@ def collect_stats(
         all_years=[],
     )
 
-    scans = list(iter_release_scans(root, exts, include_root))
+    scans = list_release_scans(root, exts, include_root, sort=False)
     total_files = sum(len(scan.audio_files) for scan in scans)
     if progress is not None:
         progress.start(total_files)
@@ -44,20 +45,21 @@ def collect_stats(
         sr_set: set[int] = set()
         bit_set: set[int] = set()
         ext_set: set[str] = set()
-        tracks: list[Track] = []
+        tracks: list[Track] = [] if include_tracks else []
 
         for f in audio_files:
             dur, sr, bit = audio_reader.get_audio_info(f)
             if progress is not None:
                 progress.advance()
-            tracks.append(
-                Track(
-                    path=f,
-                    duration_seconds=dur,
-                    sample_rate=sr,
-                    bit_depth=bit,
+            if include_tracks:
+                tracks.append(
+                    Track(
+                        path=f,
+                        duration_seconds=dur,
+                        sample_rate=sr,
+                        bit_depth=bit,
+                    )
                 )
-            )
             if dur is None:
                 logger.warning("Warning: can't read duration: %s", f)
                 continue
