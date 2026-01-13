@@ -36,7 +36,8 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point."""
     setup_logging()
-    logger.info("trackerhelper %s", __version__)
+    if sys.stdout.isatty():
+        logger.info("trackerhelper %s", __version__)
     parser = build_parser()
     args = parser.parse_args(sys.argv[1:] if argv is None else argv)
 
