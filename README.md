@@ -36,6 +36,7 @@ If DR Meter saves logs to a global folder, `dr.ps1` will not see them because it
 - Python 3.10+
 - `ffprobe` from ffmpeg available in `PATH`
 - `requests` (used for FastPic uploads in `release`, installed with the package)
+- `rich` (CLI progress output, installed with the package)
 
 Check:
 ```bash

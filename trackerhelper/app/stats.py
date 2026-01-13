@@ -7,6 +7,7 @@ from ..domain.models import Release, StatsSummary, Track
 from ..domain.utils import extract_years_from_text
 from ..infra.ffprobe import AudioInfoReader
 from ..infra.scan import iter_release_scans
+from .progress import ProgressCallback
 from .synthetic_dataset import load_synthetic_cases, make_track_paths
 
 logger = logging.getLogger(__name__)
@@ -17,6 +18,7 @@ def collect_stats(
     exts: set[str],
     include_root: bool,
     audio_reader: AudioInfoReader,
+    progress: ProgressCallback | None = None,
 ) -> tuple[list[Release], StatsSummary]:
     """Collect stats from the filesystem plus ffprobe."""
     releases: list[Release] = []
@@ -29,7 +31,12 @@ def collect_stats(
         all_years=[],
     )
 
-    for scan in iter_release_scans(root, exts, include_root):
+    scans = list(iter_release_scans(root, exts, include_root))
+    total_files = sum(len(scan.audio_files) for scan in scans)
+    if progress is not None:
+        progress.start(total_files)
+
+    for scan in scans:
         folder = scan.path
         audio_files = scan.audio_files
         folder_sum = 0.0
@@ -41,6 +48,8 @@ def collect_stats(
 
         for f in audio_files:
             dur, sr, bit = audio_reader.get_audio_info(f)
+            if progress is not None:
+                progress.advance()
             tracks.append(
                 Track(
                     path=f,
@@ -83,6 +92,9 @@ def collect_stats(
 
             rel = folder.relative_to(root)
             summary.all_years.extend(extract_years_from_text(rel.as_posix()))
+
+    if progress is not None:
+        progress.finish()
 
     return releases, summary
 

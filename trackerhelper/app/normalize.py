@@ -13,6 +13,7 @@ from ..domain.normalize import (
 from ..domain.tags import select_release_metadata
 from ..infra.ffprobe import FfprobeClient, TagsReader
 from ..infra.scan import ReleaseScan, iter_release_scans
+from .progress import ProgressCallback
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,7 @@ def plan_normalization(
     root: Path,
     exts: set[str],
     tag_reader: TagsReader | None = None,
+    progress: ProgressCallback | None = None,
 ) -> NormalizationPlan:
     """Build a normalization plan and skip unsafe targets."""
     ffprobe = tag_reader or FfprobeClient()
@@ -41,15 +43,25 @@ def plan_normalization(
             single_mode = True
             release_data = [ReleaseScan(path=root, audio_files=[])]
 
+    total_files = sum(len(item.audio_files) for item in release_data)
+    if progress is not None:
+        progress.start(total_files)
+
     inputs: list[NormalizationInput] = []
     for item in release_data:
-        tags_list = [ffprobe.get_tags(p) for p in item.audio_files]
+        tags_list: list[dict[str, str]] = []
+        for path in item.audio_files:
+            tags_list.append(ffprobe.get_tags(path))
+            if progress is not None:
+                progress.advance()
         artist, album = select_release_metadata(tags_list)
         year = parse_year_from_folder_name(item.path.name)
         inputs.append(NormalizationInput(path=item.path, artist=artist, album=album, year=year))
 
     plan = build_normalization_plan(inputs, single_mode=single_mode)
     if not plan.actions:
+        if progress is not None:
+            progress.finish()
         return plan
 
     actions = []
@@ -61,6 +73,9 @@ def plan_normalization(
             )
             continue
         actions.append(action)
+
+    if progress is not None:
+        progress.finish()
 
     return NormalizationPlan(actions=actions, skipped=skipped)
 

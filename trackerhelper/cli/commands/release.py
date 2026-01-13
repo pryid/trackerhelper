@@ -7,6 +7,7 @@ from pathlib import Path
 from ..args import add_common_audio_args, normalize_exts
 from ..common import ensure_executable, ensure_root
 from ...app.release import build_release_bbcode
+from ..progress import progress_bar
 
 logger = logging.getLogger(__name__)
 
@@ -45,15 +46,28 @@ def run(args: argparse.Namespace) -> int:
             logger.warning("Warning: --dr-dir path is not a directory: %s", dr_dir)
             dr_dir = None
 
-    result = build_release_bbcode(
-        root,
-        exts,
-        args.include_root,
-        dr_dir=dr_dir,
-        test_mode=args.synthetic,
-        no_cover=args.no_cover,
-        lang=args.lang,
-    )
+    if args.synthetic:
+        result = build_release_bbcode(
+            root,
+            exts,
+            args.include_root,
+            dr_dir=dr_dir,
+            test_mode=True,
+            no_cover=args.no_cover,
+            lang=args.lang,
+        )
+    else:
+        with progress_bar("Reading audio metadata") as progress:
+            result = build_release_bbcode(
+                root,
+                exts,
+                args.include_root,
+                dr_dir=dr_dir,
+                test_mode=False,
+                no_cover=args.no_cover,
+                lang=args.lang,
+                progress=progress,
+            )
 
     if result is None:
         print("No audio files found.")

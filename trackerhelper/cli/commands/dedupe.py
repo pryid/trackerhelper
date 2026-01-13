@@ -5,6 +5,7 @@ from pathlib import Path
 
 from ..args import normalize_exts
 from ...app.dedupe import default_jobs, run_dedupe
+from ..progress import progress_bar
 from ...domain.constants import AUDIO_EXTS_DEFAULT
 
 
@@ -63,12 +64,25 @@ def run(args: argparse.Namespace) -> int:
     out_dir = Path(args.out_dir).expanduser().resolve()
     move_to = Path(args.move_to).expanduser().resolve() if args.move_to else None
 
-    return run_dedupe(
-        roots=roots,
-        exts=exts,
-        out_dir=out_dir,
-        jobs=args.jobs,
-        move_to=move_to,
-        delete=args.delete,
-        quiet=args.quiet,
-    )
+    if args.quiet:
+        return run_dedupe(
+            roots=roots,
+            exts=exts,
+            out_dir=out_dir,
+            jobs=args.jobs,
+            move_to=move_to,
+            delete=args.delete,
+            quiet=True,
+        )
+
+    with progress_bar("Fingerprinting audio") as progress:
+        return run_dedupe(
+            roots=roots,
+            exts=exts,
+            out_dir=out_dir,
+            jobs=args.jobs,
+            move_to=move_to,
+            delete=args.delete,
+            quiet=False,
+            progress=progress,
+        )

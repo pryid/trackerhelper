@@ -6,6 +6,7 @@ from pathlib import Path
 from ..args import add_common_audio_args, normalize_exts
 from ..common import ensure_executable, ensure_root
 from ...app.normalize import apply_normalization, plan_normalization
+from ..progress import progress_bar
 
 
 def add_parser(subparsers) -> argparse.ArgumentParser:
@@ -37,7 +38,8 @@ def run(args: argparse.Namespace) -> int:
         return 3
 
     exts = normalize_exts(args.ext)
-    plan = plan_normalization(root, exts)
+    with progress_bar("Reading tags") as progress:
+        plan = plan_normalization(root, exts, progress=progress)
 
     if not plan.actions and not plan.skipped:
         print("No audio files found for normalization.")

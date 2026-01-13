@@ -19,6 +19,7 @@ from ..formatting.tracklist import build_tracklist_lines
 from ..infra.cover import FastPicCoverUploader, find_cover_jpg, requests as cover_requests
 from ..infra.dr import build_dr_index, find_dr_text_for_release
 from ..infra.ffprobe import FfprobeClient
+from .progress import ProgressCallback
 from .stats import collect_stats, collect_synthetic_stats
 
 logger = logging.getLogger(__name__)
@@ -46,12 +47,13 @@ def build_release_bbcode(
     test_mode: bool,
     no_cover: bool,
     lang: str,
+    progress: ProgressCallback | None = None,
 ) -> ReleaseBuildResult | None:
     if test_mode:
         releases, summary = collect_synthetic_stats(root)
     else:
         ffprobe = FfprobeClient()
-        releases, summary = collect_stats(root, exts, include_root, ffprobe)
+        releases, summary = collect_stats(root, exts, include_root, ffprobe, progress=progress)
 
     if not releases:
         return None

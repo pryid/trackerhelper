@@ -6,6 +6,7 @@ from pathlib import Path
 from ..args import add_common_audio_args, normalize_exts
 from ..common import ensure_executable, ensure_root
 from ...app.stats import collect_stats, collect_synthetic_stats
+from ..progress import progress_bar
 from ...domain.grouping import group_releases
 from ...domain.utils import bit_label, format_hhmmss, release_word, sr_label, track_word
 from ...infra.ffprobe import FfprobeClient
@@ -43,7 +44,8 @@ def run(args: argparse.Namespace) -> int:
         releases, summary = collect_synthetic_stats(root)
     else:
         ffprobe = FfprobeClient()
-        releases, summary = collect_stats(root, exts, args.include_root, ffprobe)
+        with progress_bar("Reading audio metadata") as progress:
+            releases, summary = collect_stats(root, exts, args.include_root, ffprobe, progress=progress)
 
     if not releases:
         print("No audio files found.")

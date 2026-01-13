@@ -8,6 +8,7 @@ from ..domain.dedupe import build_release_keys, find_redundant_releases
 from ..infra.fingerprint import fingerprint_files, fp_row_sort_key
 from ..infra.scan import iter_audio_files, release_root_for_path
 from .dedupe_reporting import apply_actions, ensure_dir, print_summary, write_reports
+from .progress import ProgressCallback
 
 
 def _require_executable(cmd: str) -> bool:
@@ -23,6 +24,7 @@ def run_dedupe(
     move_to: Path | None,
     delete: bool,
     quiet: bool,
+    progress: ProgressCallback | None = None,
 ) -> int:
     if not _require_executable("fpcalc"):
         print("ERROR: 'fpcalc' not found in PATH. Install chromaprint (fpcalc).", flush=True)
@@ -43,7 +45,11 @@ def run_dedupe(
         print(f"Audio files found: {len(audio_files)}")
         print(f"Computing fpcalc fingerprints (jobs={jobs})...")
 
-    rows = fingerprint_files(audio_files, jobs)
+    if progress is not None:
+        progress.start(len(audio_files))
+    rows = fingerprint_files(audio_files, jobs, on_progress=progress.advance if progress else None)
+    if progress is not None:
+        progress.finish()
     if not rows:
         print("fpcalc failed to process any files (check codecs/files).", flush=True)
         return 1
