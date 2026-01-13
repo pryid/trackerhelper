@@ -161,6 +161,18 @@ trackerhelper stats "/path/to/DiscographyRoot" --json
 trackerhelper stats "/path/to/DiscographyRoot" --csv
 ```
 
+### Потрековый вывод
+```bash
+trackerhelper stats "/path/to/DiscographyRoot" --json --per-track
+trackerhelper stats "/path/to/DiscographyRoot" --csv --per-track
+```
+
+### Запись вывода в файл
+```bash
+trackerhelper stats "/path/to/DiscographyRoot" --json --output "/tmp/stats.json"
+```
+Файлы вывода должны быть вне папки с музыкой.
+
 ### Нормализация имён папок релизов
 По умолчанию выполняется "сухой" прогон (без переименований):
 
@@ -201,6 +213,19 @@ trackerhelper release "/path/to/DiscographyRoot" --no-cover
 В шаблоне остаются плейсхолдеры `ROOT_COVER_URL`, `GENRE`, `Service`, `YEAR`.
 В русской версии используется `ЛЕЙБЛ`, в английской — `LABEL`.
 
+### Куда писать BBCode
+```bash
+trackerhelper release "/path/to/DiscographyRoot" --output "/tmp/release.txt"
+```
+Файлы вывода должны быть вне папки с музыкой.
+
+### Отчёт о недостающих обложках / DR логах
+```bash
+trackerhelper release "/path/to/DiscographyRoot" --report-missing
+trackerhelper release "/path/to/DiscographyRoot" --report-missing "/tmp/missing_report.txt"
+```
+Файлы вывода должны быть вне папки с музыкой.
+
 ### Подстановка DR-отчётов в BBCode
 Если у тебя уже есть `*_dr.txt` (например, собранные `dr.ps1`), укажи папку с логами:
 
@@ -229,10 +254,14 @@ trackerhelper dedupe --roots Albums Singles
 - `--delete` — удалить найденные релизы (опасно)
 - `--json` — вывести JSON в stdout
 - `--csv` — вывести CSV в stdout
+- `--jsonl` — вывести JSON Lines в stdout
+- `--output PATH` — записать JSON/CSV/JSONL в файл
 - `--plan-out PATH` — сохранить план в JSON
 - `--apply-plan PATH` — применить ранее сохраненный план
+- `--dry-run` — не удалять/не перемещать релизы
 
 Примечание: `--apply-plan` требует `--move-to` или `--delete`.
+Файлы вывода и отчёты должны быть вне сканируемых корней.
 
 `--synthetic` использует данные из `trackerhelper/app/synthetic_dataset.py` и позволяет быстро проверить, как выглядит консольный вывод и BBCode, не имея реальных файлов.
 

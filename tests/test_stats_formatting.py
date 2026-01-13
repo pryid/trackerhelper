@@ -3,8 +3,13 @@ import unittest
 from pathlib import Path
 
 from trackerhelper.domain.grouping import group_releases
-from trackerhelper.domain.models import Release, StatsSummary
-from trackerhelper.formatting.stats import render_stats_csv, render_stats_json, render_stats_text
+from trackerhelper.domain.models import Release, StatsSummary, Track
+from trackerhelper.formatting.stats import (
+    render_stats_csv,
+    render_stats_csv_tracks,
+    render_stats_json,
+    render_stats_text,
+)
 
 
 class StatsFormattingTests(unittest.TestCase):
@@ -18,7 +23,14 @@ class StatsFormattingTests(unittest.TestCase):
                 sample_rates={44100},
                 bit_depths={16},
                 exts={".flac"},
-                tracks=[],
+                tracks=[
+                    Track(
+                        path=self.root / "Albums" / "Alpha" / "01 - Alpha.flac",
+                        duration_seconds=60.0,
+                        sample_rate=44100,
+                        bit_depth=16,
+                    )
+                ],
             ),
             Release(
                 path=self.root / "Singles" / "Beta",
@@ -27,7 +39,20 @@ class StatsFormattingTests(unittest.TestCase):
                 sample_rates={48000},
                 bit_depths={24},
                 exts={".wav"},
-                tracks=[],
+                tracks=[
+                    Track(
+                        path=self.root / "Singles" / "Beta" / "01 - Beta.wav",
+                        duration_seconds=60.0,
+                        sample_rate=48000,
+                        bit_depth=24,
+                    ),
+                    Track(
+                        path=self.root / "Singles" / "Beta" / "02 - Beta.wav",
+                        duration_seconds=60.0,
+                        sample_rate=48000,
+                        bit_depth=24,
+                    ),
+                ],
             ),
         ]
         self.summary = StatsSummary(
@@ -53,11 +78,24 @@ class StatsFormattingTests(unittest.TestCase):
         self.assertEqual(data["summary"]["total_tracks"], 3)
         self.assertEqual(data["summary"]["total_releases"], 2)
 
+    def test_render_stats_json_with_tracks(self):
+        groups = group_releases(self.releases, self.root)
+        data = json.loads(render_stats_json(groups, self.summary, self.root, include_tracks=True))
+        releases = data["groups"][0]["releases"]
+        self.assertIn("tracks", releases[0])
+        self.assertTrue(releases[0]["tracks"])
+
     def test_render_stats_csv(self):
         csv_text = render_stats_csv(self.releases, self.root)
         lines = csv_text.splitlines()
         self.assertEqual(lines[0].split(",")[0], "group")
         self.assertEqual(len(lines), 3)
+
+    def test_render_stats_csv_tracks(self):
+        csv_text = render_stats_csv_tracks(self.releases, self.root)
+        lines = csv_text.splitlines()
+        self.assertEqual(lines[0].split(",")[0], "group")
+        self.assertEqual(len(lines), 4)
 
 
 if __name__ == "__main__":

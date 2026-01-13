@@ -1,8 +1,14 @@
+import json
 import unittest
 from pathlib import Path
 
 from trackerhelper.domain.dedupe import DedupeResult, ReleaseContainment
-from trackerhelper.formatting.dedupe import PLAN_VERSION, dedupe_result_to_dict, render_dedupe_csv
+from trackerhelper.formatting.dedupe import (
+    PLAN_VERSION,
+    dedupe_result_to_dict,
+    iter_dedupe_jsonl,
+    render_dedupe_csv,
+)
 
 
 class DedupeFormattingTests(unittest.TestCase):
@@ -30,6 +36,12 @@ class DedupeFormattingTests(unittest.TestCase):
         lines = csv_text.splitlines()
         self.assertEqual(lines[0].split(",")[0], "release")
         self.assertEqual(len(lines), 2)
+
+    def test_render_dedupe_jsonl(self):
+        lines = list(iter_dedupe_jsonl(self.result))
+        self.assertEqual(len(lines), 1)
+        payload = json.loads(lines[0])
+        self.assertEqual(payload["release"], self.a.as_posix())
 
 
 if __name__ == "__main__":

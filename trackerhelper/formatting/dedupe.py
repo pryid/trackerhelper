@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any
+import json
+from typing import Any, Iterator
 
 from ..domain.dedupe import DedupeResult
 
@@ -62,3 +63,17 @@ def render_dedupe_csv(result: DedupeResult) -> str:
             )
         )
     return "\n".join(lines)
+
+
+def iter_dedupe_jsonl(result: DedupeResult) -> Iterator[str]:
+    for rel in sorted(result.redundant, key=lambda p: p.as_posix()):
+        reference = result.duplicate_of.get(rel) or result.contained_in.get(rel)
+        payload = {
+            "release": rel.as_posix(),
+            "action": "remove",
+            "reason": "duplicate" if rel in result.duplicate_of else "contained",
+            "reference": reference.as_posix() if reference is not None else None,
+            "tracks": result.sizes.get(rel),
+            "unique_tracks": result.unique_count.get(rel),
+        }
+        yield json.dumps(payload, ensure_ascii=False)

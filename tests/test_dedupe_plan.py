@@ -4,14 +4,14 @@ import unittest
 from pathlib import Path
 
 from trackerhelper.app.dedupe import apply_plan
+from tests.helpers import make_fake_discography
 
 
 class DedupePlanTests(unittest.TestCase):
     def test_apply_plan_delete(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            rel = root / "Albums" / "DeleteMe"
-            rel.mkdir(parents=True)
+            rel = make_fake_discography(root, {"Albums": ["DeleteMe"]})[0]
             plan_path = root / "plan.json"
             plan_path.write_text(json.dumps({"redundant": [str(rel)]}), encoding="utf-8")
 
@@ -24,8 +24,7 @@ class DedupePlanTests(unittest.TestCase):
     def test_apply_plan_move(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            rel = root / "Albums" / "MoveMe"
-            rel.mkdir(parents=True)
+            rel = make_fake_discography(root, {"Albums": ["MoveMe"]})[0]
             target = root / "Moved"
             plan_path = root / "plan.json"
             plan_path.write_text(json.dumps({"redundant": [str(rel)]}), encoding="utf-8")

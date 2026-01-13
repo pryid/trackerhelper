@@ -29,6 +29,9 @@ logger = logging.getLogger(__name__)
 class ReleaseBuildResult:
     bbcode: str
     total_releases: int
+    missing_covers: list[Path]
+    missing_drs: list[Path]
+    dr_checked: bool
 
 
 def _normalize_lang(lang: str | None) -> str:
@@ -61,6 +64,9 @@ def build_release_bbcode(
     dr_index: dict[str, Path] = {}
     if dr_dir is not None:
         dr_index = build_dr_index(dr_dir)
+        dr_checked = True
+    else:
+        dr_checked = False
 
     cover_uploader: FastPicCoverUploader | None = None
     if not test_mode and not no_cover:
@@ -75,6 +81,8 @@ def build_release_bbcode(
         year_range = f"{y_min}-{y_max}" if y_min != y_max else f"{y_min}"
 
     items: list[ReleaseBBCodeItem] = []
+    missing_covers: list[Path] = []
+    missing_drs: list[Path] = []
     for rel in releases:
         rel_path = rel.path.relative_to(root)
         group = group_key(rel_path)
@@ -88,15 +96,18 @@ def build_release_bbcode(
             dr_text = rel.dr_text
         elif dr_dir is not None:
             dr_text = find_dr_text_for_release(folder_name, dr_dir, dr_index)
+        if dr_checked and dr_text is None:
+            missing_drs.append(rel.path)
 
         cover_url = None
-        if cover_uploader is not None:
-            cover_path = find_cover_jpg(rel.path)
-            if cover_path is not None:
-                try:
-                    cover_url = cover_uploader.upload(cover_path)
-                except Exception as exc:
-                    logger.warning("Warning: cover upload failed for %s: %s", cover_path, exc)
+        cover_path = find_cover_jpg(rel.path)
+        if cover_path is None:
+            missing_covers.append(rel.path)
+        elif cover_uploader is not None:
+            try:
+                cover_url = cover_uploader.upload(cover_path)
+            except Exception as exc:
+                logger.warning("Warning: cover upload failed for %s: %s", cover_path, exc)
 
         items.append(
             ReleaseBBCodeItem(
@@ -141,4 +152,10 @@ def build_release_bbcode(
             lang=lang,
         )
 
-    return ReleaseBuildResult(bbcode=bbcode, total_releases=total_releases)
+    return ReleaseBuildResult(
+        bbcode=bbcode,
+        total_releases=total_releases,
+        missing_covers=missing_covers,
+        missing_drs=missing_drs,
+        dr_checked=dr_checked,
+    )

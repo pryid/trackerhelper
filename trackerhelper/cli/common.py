@@ -34,3 +34,20 @@ def prepare_audio_root(path_str: str, *, skip_checks: bool) -> tuple[Path, int |
     if not ensure_executable("ffprobe"):
         return root, 3
     return root, None
+
+
+def is_within(path: Path, root: Path) -> bool:
+    try:
+        return path.resolve().is_relative_to(root.resolve())
+    except AttributeError:
+        resolved = path.resolve()
+        root_resolved = root.resolve()
+        return root_resolved == resolved or root_resolved in resolved.parents
+
+
+def ensure_outside_roots(path: Path, roots: list[Path], label: str) -> bool:
+    for root in roots:
+        if is_within(path, root):
+            logger.error("Error: %s cannot be inside the music root: %s", label, root)
+            return False
+    return True

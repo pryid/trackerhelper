@@ -163,6 +163,18 @@ trackerhelper stats "/path/to/DiscographyRoot" --json
 trackerhelper stats "/path/to/DiscographyRoot" --csv
 ```
 
+### Per-track stats
+```bash
+trackerhelper stats "/path/to/DiscographyRoot" --json --per-track
+trackerhelper stats "/path/to/DiscographyRoot" --csv --per-track
+```
+
+### Write stats to a file
+```bash
+trackerhelper stats "/path/to/DiscographyRoot" --json --output "/tmp/stats.json"
+```
+Output files must be outside the music root.
+
 ### Normalize release folder names
 Dry run by default:
 ```bash
@@ -198,6 +210,19 @@ trackerhelper release "/path/to/DiscographyRoot" --no-cover
 Output file is written to the current working directory as:
 - `<root_folder_name>.txt`
 
+Custom output path:
+```bash
+trackerhelper release "/path/to/DiscographyRoot" --output "/tmp/release.txt"
+```
+Output files must be outside the music root.
+
+### Report missing covers / DR logs
+```bash
+trackerhelper release "/path/to/DiscographyRoot" --report-missing
+trackerhelper release "/path/to/DiscographyRoot" --report-missing "/tmp/missing_report.txt"
+```
+Output files must be outside the music root.
+
 The template keeps placeholders like `ROOT_COVER_URL`, `GENRE`, `Service`, `YEAR`.
 Russian output uses `ЛЕЙБЛ` for the label placeholder, English output uses `LABEL`.
 
@@ -228,8 +253,13 @@ Options:
 - `--delete` delete duplicate releases (dangerous)
 - `--json` output JSON to stdout
 - `--csv` output CSV to stdout
+- `--jsonl` output JSON Lines to stdout
+- `--output PATH` write JSON/CSV/JSONL to a file
 - `--plan-out PATH` write a plan JSON to apply later
 - `--apply-plan PATH` apply a previously generated plan
+- `--dry-run` do not move/delete releases
+
+Output files and reports must be outside the scanned roots.
 
 Note: `--apply-plan` requires either `--move-to` or `--delete`.
 

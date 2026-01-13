@@ -5,9 +5,10 @@ import logging
 from pathlib import Path
 
 from ..args import add_common_audio_args, add_no_progress_arg, normalize_exts
-from ..common import prepare_audio_root
+from ..common import ensure_outside_roots, prepare_audio_root
 from ..progress import run_with_progress
 from ...app.release import build_release_bbcode
+from ...formatting.release import render_missing_assets_report
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,18 @@ def add_parser(subparsers) -> argparse.ArgumentParser:
     )
     parser.add_argument("--no-cover", action="store_true", help="Disable cover upload to FastPic.")
     parser.add_argument("--lang", choices=["ru", "en"], default="ru", help="BBCode language (default: ru).")
+    parser.add_argument(
+        "--output",
+        default=None,
+        help="Write BBCode output to a file (default: ./<root>.txt).",
+    )
+    parser.add_argument(
+        "--report-missing",
+        nargs="?",
+        const="missing_report.txt",
+        default=None,
+        help="Write a report of releases missing cover.jpg or DR reports.",
+    )
     return parser
 
 
@@ -74,7 +87,22 @@ def run(args: argparse.Namespace) -> int:
         print("No audio files found.")
         return 0
 
-    out_path = Path.cwd() / f"{root.name}.txt"
+    if args.output is not None:
+        out_path = Path(args.output).expanduser().resolve()
+    else:
+        out_path = Path.cwd() / f"{root.name}.txt"
+    if not ensure_outside_roots(out_path, [root], "output file"):
+        return 2
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(result.bbcode, encoding="utf-8")
     print(f"\nWrote release template: {out_path}")
+
+    if args.report_missing is not None:
+        report_path = Path(args.report_missing).expanduser().resolve()
+        if not ensure_outside_roots(report_path, [root], "missing report file"):
+            return 2
+        report_text = render_missing_assets_report(result, root, dr_dir=dr_dir)
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.write_text(report_text, encoding="utf-8")
+        print(f"Wrote missing report: {report_path}")
     return 0
