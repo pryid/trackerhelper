@@ -1,22 +1,14 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from typing import Iterator
+import importlib
+from typing import Any, Iterator
 
-from rich.progress import (
-    BarColumn,
-    Progress,
-    SpinnerColumn,
-    TaskID,
-    TextColumn,
-    TimeElapsedColumn,
-)
-
-from ..app.progress import ProgressCallback
+from ..app.progress import NullProgress, ProgressCallback
 
 
 class _RichProgress(ProgressCallback):
-    def __init__(self, progress: Progress, task_id: TaskID) -> None:
+    def __init__(self, progress: Any, task_id: Any) -> None:
         self._progress = progress
         self._task_id = task_id
         self._total: int | None = None
@@ -39,15 +31,21 @@ class _RichProgress(ProgressCallback):
 
 @contextmanager
 def progress_bar(description: str) -> Iterator[ProgressCallback]:
-    progress = Progress(
-        SpinnerColumn(),
-        TextColumn("{task.description}"),
-        BarColumn(),
-        TextColumn("{task.completed}/{task.total}"),
-        TimeElapsedColumn(),
+    try:
+        rich_progress = importlib.import_module("rich.progress")
+    except Exception:
+        yield NullProgress()
+        return
+
+    progress = rich_progress.Progress(
+        rich_progress.SpinnerColumn(),
+        rich_progress.TextColumn("{task.description}"),
+        rich_progress.BarColumn(),
+        rich_progress.TextColumn("{task.completed}/{task.total}"),
+        rich_progress.TimeElapsedColumn(),
         transient=True,
     )
-    task_id: TaskID = progress.add_task(description, total=1)
+    task_id = progress.add_task(description, total=1)
     with progress:
         tracker = _RichProgress(progress, task_id)
         try:
