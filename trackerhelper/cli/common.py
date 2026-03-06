@@ -25,6 +25,16 @@ def resolve_root(path_str: str) -> Path:
     return Path(path_str).expanduser().resolve()
 
 
+def filter_existing_roots(roots: list[Path]) -> list[Path]:
+    existing: list[Path] = []
+    for root in roots:
+        if root.exists() and root.is_dir():
+            existing.append(root)
+            continue
+        logger.warning("Warning: skipping missing root: %s", root)
+    return existing
+
+
 def prepare_audio_root(path_str: str, *, skip_checks: bool) -> tuple[Path, int | None]:
     root = resolve_root(path_str)
     if skip_checks:
@@ -51,3 +61,21 @@ def ensure_outside_roots(path: Path, roots: list[Path], label: str) -> bool:
             logger.error("Error: %s cannot be inside the music root: %s", label, root)
             return False
     return True
+
+
+def write_output_text(out_path: Path | None, text: str) -> None:
+    if out_path is None:
+        print(text)
+        return
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(text, encoding="utf-8")
+
+
+def write_output_lines(out_path: Path | None, lines: list[str]) -> None:
+    text = "\n".join(lines)
+    if out_path is None:
+        for line in lines:
+            print(line)
+        return
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(text + ("\n" if text else ""), encoding="utf-8")

@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import json
 from typing import Any, Iterator
 
+from .csv_utils import render_csv_rows
 from ..domain.dedupe import DedupeResult
 
 PLAN_VERSION = 1
@@ -45,24 +46,24 @@ def dedupe_result_to_dict(
 
 
 def render_dedupe_csv(result: DedupeResult) -> str:
-    lines = ["release,action,reason,reference,tracks,unique_tracks"]
+    rows: list[list[object]] = [["release", "action", "reason", "reference", "tracks", "unique_tracks"]]
     for rel in sorted(result.redundant, key=lambda p: p.as_posix()):
         reason = "duplicate" if rel in result.duplicate_of else "contained"
         reference = result.duplicate_of.get(rel) or result.contained_in.get(rel)
         reference_str = reference.as_posix() if reference is not None else ""
         tracks = result.sizes.get(rel)
         unique = result.unique_count.get(rel)
-        lines.append(
-            "{release},{action},{reason},{reference},{tracks},{unique}".format(
-                release=rel.as_posix(),
-                action="remove",
-                reason=reason,
-                reference=reference_str,
-                tracks=tracks if tracks is not None else "",
-                unique=unique if unique is not None else "",
-            )
+        rows.append(
+            [
+                rel.as_posix(),
+                "remove",
+                reason,
+                reference_str,
+                tracks if tracks is not None else "",
+                unique if unique is not None else "",
+            ]
         )
-    return "\n".join(lines)
+    return render_csv_rows(rows)
 
 
 def iter_dedupe_jsonl(result: DedupeResult) -> Iterator[str]:

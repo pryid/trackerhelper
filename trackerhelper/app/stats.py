@@ -30,6 +30,8 @@ def collect_stats(
         total_bit=set(),
         total_exts=set(),
         all_years=[],
+        scanned_audio_files=0,
+        unreadable_audio_files=0,
     )
 
     scans = list_release_scans(root, exts, include_root, sort=False)
@@ -42,6 +44,7 @@ def collect_stats(
         audio_files = scan.audio_files
         folder_sum = 0.0
         folder_tracks = 0
+        unreadable_tracks = 0
         sr_set: set[int] = set()
         bit_set: set[int] = set()
         ext_set: set[str] = set()
@@ -49,8 +52,15 @@ def collect_stats(
 
         for f in audio_files:
             dur, sr, bit = audio_reader.get_audio_info(f)
+            summary.scanned_audio_files += 1
             if progress is not None:
                 progress.advance()
+            if dur is None:
+                unreadable_tracks += 1
+                summary.unreadable_audio_files += 1
+                logger.warning("Warning: can't read duration: %s", f)
+                continue
+
             if include_tracks:
                 tracks.append(
                     Track(
@@ -60,9 +70,6 @@ def collect_stats(
                         bit_depth=bit,
                     )
                 )
-            if dur is None:
-                logger.warning("Warning: can't read duration: %s", f)
-                continue
 
             folder_sum += dur
             folder_tracks += 1
@@ -79,6 +86,7 @@ def collect_stats(
                     path=folder,
                     duration_seconds=folder_sum,
                     track_count=folder_tracks,
+                    unreadable_track_count=unreadable_tracks,
                     sample_rates=sr_set,
                     bit_depths=bit_set,
                     exts=ext_set,
@@ -111,6 +119,8 @@ def collect_synthetic_stats(root: Path) -> tuple[list[Release], StatsSummary]:
         total_bit=set(),
         total_exts=set(),
         all_years=[],
+        scanned_audio_files=0,
+        unreadable_audio_files=0,
     )
 
     for case in load_synthetic_cases():
@@ -132,6 +142,7 @@ def collect_synthetic_stats(root: Path) -> tuple[list[Release], StatsSummary]:
                 path=folder,
                 duration_seconds=secs,
                 track_count=len(audio_files),
+                unreadable_track_count=0,
                 sample_rates={sr},
                 bit_depths={bit},
                 exts={ext},
@@ -145,6 +156,7 @@ def collect_synthetic_stats(root: Path) -> tuple[list[Release], StatsSummary]:
         summary.total_sr.add(sr)
         summary.total_bit.add(bit)
         summary.total_exts.add(ext)
+        summary.scanned_audio_files += len(audio_files)
 
         rel = folder.relative_to(root)
         summary.all_years.extend(extract_years_from_text(rel.as_posix()))

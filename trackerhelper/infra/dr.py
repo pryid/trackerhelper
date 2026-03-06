@@ -48,7 +48,7 @@ def build_dr_index(dr_dir: Path) -> dict[str, Path]:
     if not dr_dir.exists() or not dr_dir.is_dir():
         return idx
 
-    for p in dr_dir.iterdir():
+    for p in sorted(dr_dir.iterdir(), key=lambda item: item.name.lower()):
         if not p.is_file() or p.suffix.lower() != ".txt":
             continue
         key = normalize_name(strip_dr_suffix(p.stem))

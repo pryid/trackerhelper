@@ -5,9 +5,9 @@ import logging
 from pathlib import Path
 
 from ..args import add_common_audio_args, add_no_progress_arg, normalize_exts
-from ..common import ensure_outside_roots, prepare_audio_root
+from ..common import ensure_outside_roots, prepare_audio_root, write_output_text
 from ..progress import run_with_progress
-from ...app.release import build_release_bbcode
+from ...app.release import NoReadableAudioError, build_release_bbcode
 from ...formatting.release import render_missing_assets_report
 
 logger = logging.getLogger(__name__)
@@ -56,32 +56,36 @@ def run(args: argparse.Namespace) -> int:
             logger.warning("Warning: --dr-dir path is not a directory: %s", dr_dir)
             dr_dir = None
 
-    if args.synthetic:
-        result = build_release_bbcode(
-            root,
-            exts,
-            args.include_root,
-            dr_dir=dr_dir,
-            test_mode=True,
-            no_cover=args.no_cover,
-            lang=args.lang,
-        )
-    else:
-        result = run_with_progress(
-            args.no_progress,
-            False,
-            "Reading audio metadata",
-            lambda progress: build_release_bbcode(
+    try:
+        if args.synthetic:
+            result = build_release_bbcode(
                 root,
                 exts,
                 args.include_root,
                 dr_dir=dr_dir,
-                test_mode=False,
+                test_mode=True,
                 no_cover=args.no_cover,
                 lang=args.lang,
-                progress=progress,
-            ),
-        )
+            )
+        else:
+            result = run_with_progress(
+                args.no_progress,
+                False,
+                "Reading audio metadata",
+                lambda progress: build_release_bbcode(
+                    root,
+                    exts,
+                    args.include_root,
+                    dr_dir=dr_dir,
+                    test_mode=False,
+                    no_cover=args.no_cover,
+                    lang=args.lang,
+                    progress=progress,
+                ),
+            )
+    except NoReadableAudioError as exc:
+        print(str(exc))
+        return 0
 
     if result is None:
         print("No audio files found.")
@@ -93,8 +97,7 @@ def run(args: argparse.Namespace) -> int:
         out_path = Path.cwd() / f"{root.name}.txt"
     if not ensure_outside_roots(out_path, [root], "output file"):
         return 2
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(result.bbcode, encoding="utf-8")
+    write_output_text(out_path, result.bbcode)
     print(f"Wrote release template: {out_path}")
 
     if args.report_missing is not None:
@@ -102,7 +105,6 @@ def run(args: argparse.Namespace) -> int:
         if not ensure_outside_roots(report_path, [root], "missing report file"):
             return 2
         report_text = render_missing_assets_report(result, root, dr_dir=dr_dir)
-        report_path.parent.mkdir(parents=True, exist_ok=True)
-        report_path.write_text(report_text, encoding="utf-8")
+        write_output_text(report_path, report_text)
         print(f"Wrote missing report: {report_path}")
     return 0

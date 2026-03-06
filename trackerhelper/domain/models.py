@@ -21,6 +21,7 @@ class Release:
     path: Path
     duration_seconds: float
     track_count: int
+    unreadable_track_count: int = 0
     sample_rates: set[int] = field(default_factory=set)
     bit_depths: set[int] = field(default_factory=set)
     exts: set[str] = field(default_factory=set)
@@ -45,6 +46,8 @@ class StatsSummary:
     total_bit: set[int] = field(default_factory=set)
     total_exts: set[str] = field(default_factory=set)
     all_years: list[int] = field(default_factory=list)
+    scanned_audio_files: int = 0
+    unreadable_audio_files: int = 0
 
 
 @dataclass

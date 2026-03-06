@@ -3,6 +3,7 @@ import unittest
 from pathlib import Path
 
 from trackerhelper.app.normalize import TAG_MIN_SAMPLES, TAG_SAMPLE_LIMIT, collect_normalization_inputs
+from trackerhelper.app.normalize import plan_normalization
 from trackerhelper.infra.ffprobe import TagsReader
 
 
@@ -32,6 +33,15 @@ class NormalizeSamplingTests(unittest.TestCase):
             self.assertEqual(len(inputs.inputs), 1)
             self.assertGreaterEqual(reader.calls, TAG_MIN_SAMPLES)
             self.assertLess(reader.calls, TAG_SAMPLE_LIMIT)
+
+    def test_plan_normalization_empty_root_has_no_skips(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+
+            plan = plan_normalization(root, {".flac"})
+
+            self.assertEqual(plan.actions, [])
+            self.assertEqual(plan.skipped, [])
 
 
 if __name__ == "__main__":

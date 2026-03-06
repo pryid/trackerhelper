@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from ..args import add_no_progress_arg, normalize_exts
-from ..common import ensure_outside_roots
+from ..common import ensure_outside_roots, filter_existing_roots, write_output_lines, write_output_text
 from ..progress import run_with_progress
 from ...app.dedupe import apply_plan, default_jobs, load_plan, run_dedupe
 from ...domain.constants import AUDIO_EXTS_DEFAULT
@@ -161,14 +161,13 @@ def run(args: argparse.Namespace) -> int:
             output = f"moved,deleted\n{moved},{deleted}"
         else:
             return 0
-        if out_path is not None:
-            out_path.parent.mkdir(parents=True, exist_ok=True)
-            out_path.write_text(output, encoding="utf-8")
-        else:
-            print(output)
+        write_output_text(out_path, output)
         return 0
 
-    roots = [Path(r).expanduser().resolve() for r in args.roots]
+    roots = filter_existing_roots([Path(r).expanduser().resolve() for r in args.roots])
+    if not roots:
+        print("Error: no valid roots to scan.", flush=True)
+        return 2
     protected_roots = _protected_roots(roots)
     exts = normalize_exts(args.ext, base_exts=set())
     out_dir = Path(args.out_dir).expanduser().resolve()
@@ -215,26 +214,11 @@ def run(args: argparse.Namespace) -> int:
 
     if args.json:
         output = json.dumps(dedupe_result_to_dict(result, roots=roots, exts=exts), ensure_ascii=False)
-        if out_path is not None:
-            out_path.parent.mkdir(parents=True, exist_ok=True)
-            out_path.write_text(output, encoding="utf-8")
-        else:
-            print(output)
+        write_output_text(out_path, output)
     elif args.csv:
         output = render_dedupe_csv(result)
-        if out_path is not None:
-            out_path.parent.mkdir(parents=True, exist_ok=True)
-            out_path.write_text(output, encoding="utf-8")
-        else:
-            print(output)
+        write_output_text(out_path, output)
     elif args.jsonl:
-        if out_path is not None:
-            out_path.parent.mkdir(parents=True, exist_ok=True)
-            with out_path.open("w", encoding="utf-8") as handle:
-                for line in iter_dedupe_jsonl(result):
-                    handle.write(line + "\n")
-        else:
-            for line in iter_dedupe_jsonl(result):
-                print(line)
+        write_output_lines(out_path, list(iter_dedupe_jsonl(result)))
 
     return 0

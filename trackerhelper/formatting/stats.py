@@ -4,6 +4,7 @@ import json
 from typing import Any
 from pathlib import Path
 
+from .csv_utils import render_csv_rows
 from ..domain.grouping import ReleaseGroup
 from ..domain.models import Release, StatsSummary
 from ..domain.utils import (
@@ -17,8 +18,7 @@ from ..domain.utils import (
 
 
 def _format_release_path(root: Path, release_path: Path) -> str:
-    rel_path = release_path.relative_to(root)
-    return Path(*rel_path.parts[1:]).as_posix() if len(rel_path.parts) > 1 else rel_path.as_posix()
+    return release_path.relative_to(root).as_posix()
 
 
 def _format_track_duration(duration: float | None) -> str:
@@ -45,6 +45,8 @@ def render_stats_text(
                 f"({rel.track_count} {track_word(rel.track_count)}, "
                 f"{bit_label(rel.bit_depths)}, {sr_label(rel.sample_rates)})"
             )
+            if rel.unreadable_track_count:
+                lines.append(f"    Warning: unreadable tracks skipped: {rel.unreadable_track_count}")
             if include_tracks:
                 for track in rel.tracks:
                     dur = _format_track_duration(track.duration_seconds)
@@ -80,6 +82,8 @@ def render_stats_json(
             "sample_rates": sorted(summary.total_sr),
             "bit_depths": sorted(summary.total_bit),
             "exts": sorted(summary.total_exts),
+            "scanned_audio_files": summary.scanned_audio_files,
+            "unreadable_audio_files": summary.unreadable_audio_files,
         },
     }
 
@@ -95,6 +99,7 @@ def render_stats_json(
                     "duration_seconds": rel.duration_seconds,
                     "duration": format_hhmmss(rel.duration_seconds),
                     "track_count": rel.track_count,
+                    "unreadable_track_count": rel.unreadable_track_count,
                     "sample_rates": sorted(rel.sample_rates),
                     "bit_depths": sorted(rel.bit_depths),
                     "exts": sorted(rel.exts),
@@ -122,33 +127,57 @@ def render_stats_json(
 
 
 def render_stats_csv(releases: list[Release], root: Path) -> str:
-    lines = ["group,rel_path,display_path,duration_seconds,duration,track_count,sample_rates,bit_depths,exts"]
+    rows: list[list[object]] = [
+        [
+            "group",
+            "rel_path",
+            "display_path",
+            "duration_seconds",
+            "duration",
+            "track_count",
+            "unreadable_track_count",
+            "sample_rates",
+            "bit_depths",
+            "exts",
+        ]
+    ]
     for rel in releases:
         rel_path = rel.path.relative_to(root).as_posix()
         group = group_key(rel.path.relative_to(root))
         sample_rates = ";".join(str(v) for v in sorted(rel.sample_rates))
         bit_depths = ";".join(str(v) for v in sorted(rel.bit_depths))
         exts = ";".join(sorted(rel.exts))
-        lines.append(
-            "{group},{rel_path},{display},{seconds},{duration},{tracks},{sr},{bit},{exts}".format(
-                group=group,
-                rel_path=rel_path,
-                display=_format_release_path(root, rel.path),
-                seconds=rel.duration_seconds,
-                duration=format_hhmmss(rel.duration_seconds),
-                tracks=rel.track_count,
-                sr=sample_rates,
-                bit=bit_depths,
-                exts=exts,
-            )
+        rows.append(
+            [
+                group,
+                rel_path,
+                _format_release_path(root, rel.path),
+                rel.duration_seconds,
+                format_hhmmss(rel.duration_seconds),
+                rel.track_count,
+                rel.unreadable_track_count,
+                sample_rates,
+                bit_depths,
+                exts,
+            ]
         )
-    return "\n".join(lines)
+    return render_csv_rows(rows)
 
 
 def render_stats_csv_tracks(releases: list[Release], root: Path) -> str:
-    lines = [
-        "group,rel_path,display_path,track_rel_path,track_name,track_ext,"
-        "duration_seconds,duration,sample_rate,bit_depth"
+    rows: list[list[object]] = [
+        [
+            "group",
+            "rel_path",
+            "display_path",
+            "track_rel_path",
+            "track_name",
+            "track_ext",
+            "duration_seconds",
+            "duration",
+            "sample_rate",
+            "bit_depth",
+        ]
     ]
     for rel in releases:
         rel_path = rel.path.relative_to(root).as_posix()
@@ -158,19 +187,18 @@ def render_stats_csv_tracks(releases: list[Release], root: Path) -> str:
             track_rel = track.path.relative_to(root).as_posix()
             duration = track.duration_seconds
             duration_text = _format_track_duration(duration) if duration is not None else ""
-            lines.append(
-                "{group},{rel_path},{display},{track_rel},{track_name},{track_ext},{seconds},{duration},"
-                "{sr},{bit}".format(
-                    group=group,
-                    rel_path=rel_path,
-                    display=display,
-                    track_rel=track_rel,
-                    track_name=track.path.name,
-                    track_ext=track.ext,
-                    seconds="" if duration is None else duration,
-                    duration=duration_text,
-                    sr="" if track.sample_rate is None else track.sample_rate,
-                    bit="" if track.bit_depth is None else track.bit_depth,
-                )
+            rows.append(
+                [
+                    group,
+                    rel_path,
+                    display,
+                    track_rel,
+                    track.path.name,
+                    track.ext,
+                    "" if duration is None else duration,
+                    duration_text,
+                    "" if track.sample_rate is None else track.sample_rate,
+                    "" if track.bit_depth is None else track.bit_depth,
+                ]
             )
-    return "\n".join(lines)
+    return render_csv_rows(rows)

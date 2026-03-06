@@ -69,12 +69,11 @@ def _sample_tags(
 
 def _resolve_release_scans(root: Path, exts: set[str]) -> tuple[list[ReleaseScan], bool]:
     release_data = list_release_scans(root, exts, include_root=True, sort=True)
+    if not release_data:
+        return [], True
     single_mode = len(release_data) == 1
     if not single_mode:
         release_data = [item for item in release_data if item.path != root]
-        if not release_data:
-            single_mode = True
-            release_data = [ReleaseScan(path=root, audio_files=[])]
     return release_data, single_mode
 
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import logging
 from pathlib import Path
 
@@ -32,13 +32,12 @@ class ReleaseBuildResult:
     missing_covers: list[Path]
     missing_drs: list[Path]
     dr_checked: bool
+    failed_cover_uploads: list[Path] = field(default_factory=list)
+    cover_uploads_skipped: bool = False
 
 
-def _normalize_lang(lang: str | None) -> str:
-    if not lang:
-        return "ru"
-    lang_norm = lang.lower()
-    return "en" if lang_norm == "en" else "ru"
+class NoReadableAudioError(RuntimeError):
+    pass
 
 
 def _progress_label(stage: str, index: int, total: int, release_name: str) -> str:
@@ -63,6 +62,8 @@ def build_release_bbcode(
         releases, summary = collect_stats(root, exts, include_root, ffprobe, progress=progress)
 
     if not releases:
+        if summary.scanned_audio_files > 0:
+            raise NoReadableAudioError("Audio files found, but metadata could not be read.")
         return None
 
     dr_index: dict[str, Path] = {}
@@ -73,11 +74,15 @@ def build_release_bbcode(
         dr_checked = False
 
     cover_uploader: FastPicCoverUploader | None = None
+    cover_uploads_skipped = False
     if not test_mode and not no_cover:
         if cover_requests is None:
             logger.warning("Warning: 'requests' not installed; skipping FastPic cover uploads.")
+            cover_uploads_skipped = True
         else:
             cover_uploader = FastPicCoverUploader(resize_to=500)
+    elif not test_mode and no_cover:
+        cover_uploads_skipped = True
 
     year_range = None
     if summary.all_years:
@@ -87,6 +92,7 @@ def build_release_bbcode(
     items: list[ReleaseBBCodeItem] = []
     missing_covers: list[Path] = []
     missing_drs: list[Path] = []
+    failed_cover_uploads: list[Path] = []
     total_releases = len(releases)
     if progress is not None:
         progress.set_description("Preparing releases")
@@ -100,7 +106,7 @@ def build_release_bbcode(
 
         folder_name = rel.path.name
         title, year = parse_release_title_and_year(folder_name)
-        tracklist = build_tracklist_lines(rel.audio_files, sort=False)
+        tracklist = build_tracklist_lines(rel.audio_files, sort=True)
 
         dr_text = None
         if test_mode:
@@ -120,6 +126,7 @@ def build_release_bbcode(
                     progress.set_description(_progress_label("Uploading covers", index, total_releases, rel.path.name))
                 cover_url = cover_uploader.upload(cover_path)
             except Exception as exc:
+                failed_cover_uploads.append(rel.path)
                 logger.warning("Warning: cover upload failed for %s: %s", cover_path, exc)
 
         items.append(
@@ -138,7 +145,6 @@ def build_release_bbcode(
         if progress is not None:
             progress.advance()
 
-    lang = _normalize_lang(lang)
     groups = group_bbcode_releases(items)
 
     if total_releases == 1:
@@ -172,4 +178,6 @@ def build_release_bbcode(
         missing_covers=missing_covers,
         missing_drs=missing_drs,
         dr_checked=dr_checked,
+        failed_cover_uploads=failed_cover_uploads,
+        cover_uploads_skipped=cover_uploads_skipped,
     )

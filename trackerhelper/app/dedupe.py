@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import shutil
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -22,9 +23,9 @@ def validate_actions(
     *, delete: bool, move_to: Path | None, require_action: bool
 ) -> tuple[int, str | None]:
     if delete and move_to is not None:
-        return 2, "ERROR: --delete and --move-to cannot be used together"
+        return 2, "Error: --delete and --move-to cannot be used together"
     if require_action and not delete and move_to is None:
-        return 2, "ERROR: --apply-plan requires --move-to or --delete"
+        return 2, "Error: --apply-plan requires --move-to or --delete"
     return 0, None
 
 
@@ -107,7 +108,7 @@ def run_dedupe(
         progress.start(len(audio_files))
 
     tsv_path = out_dir / "discog_audiofp.tsv"
-    release_keys: dict[Path, set[TrackFingerprint]] = {}
+    release_keys: dict[Path, Counter[TrackFingerprint]] = {}
     fingerprint_count = 0
 
     with tsv_path.open("w", encoding="utf-8") as f:
@@ -117,7 +118,7 @@ def run_dedupe(
             rel = release_root_for_path(row.path, roots)
             if rel is None:
                 continue
-            release_keys.setdefault(rel, set()).add(TrackFingerprint(row.duration, row.fingerprint))
+            release_keys.setdefault(rel, Counter())[TrackFingerprint(row.duration, row.fingerprint)] += 1
 
     if progress is not None:
         progress.finish()

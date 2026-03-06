@@ -35,6 +35,16 @@ def render_missing_assets_report(
         lines.append("Missing cover.jpg: 0")
 
     lines.append("")
+    if result.failed_cover_uploads:
+        lines.append(f"Failed cover uploads: {len(result.failed_cover_uploads)}")
+        for rel in sorted(result.failed_cover_uploads, key=lambda p: p.as_posix()):
+            lines.append(f"- {_format_rel_path(root, rel)}")
+    else:
+        lines.append("Failed cover uploads: 0")
+
+    lines.append("")
+    lines.append(f"Cover uploads skipped: {'yes' if result.cover_uploads_skipped else 'no'}")
+
     if not result.dr_checked:
         lines.append("Missing DR reports: skipped")
     elif result.missing_drs:

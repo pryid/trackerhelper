@@ -1,4 +1,6 @@
+import csv
 import json
+from io import StringIO
 import unittest
 from pathlib import Path
 
@@ -33,9 +35,20 @@ class DedupeFormattingTests(unittest.TestCase):
 
     def test_render_dedupe_csv(self):
         csv_text = render_dedupe_csv(self.result)
-        lines = csv_text.splitlines()
-        self.assertEqual(lines[0].split(",")[0], "release")
-        self.assertEqual(len(lines), 2)
+        rows = list(csv.reader(StringIO(csv_text)))
+        self.assertEqual(rows[0][0], "release")
+        self.assertEqual(len(rows), 2)
+
+    def test_render_dedupe_csv_quotes_special_characters(self):
+        special = Path('Albums/Alpha, "Deluxe"')
+        self.result.redundant = {special}
+        self.result.duplicate_of = {special: self.b}
+        self.result.sizes = {special: 10, self.b: 10}
+        self.result.unique_count = {special: 0, self.b: 0}
+
+        rows = list(csv.reader(StringIO(render_dedupe_csv(self.result))))
+
+        self.assertEqual(rows[1][0], 'Albums/Alpha, "Deluxe"')
 
     def test_render_dedupe_jsonl(self):
         lines = list(iter_dedupe_jsonl(self.result))

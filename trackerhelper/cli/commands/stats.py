@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 
 from ..args import add_common_audio_args, add_no_progress_arg, normalize_exts
-from ..common import ensure_outside_roots, prepare_audio_root
+from ..common import ensure_outside_roots, prepare_audio_root, write_output_text
 from ..progress import run_with_progress
 from ...app.stats import collect_stats, collect_synthetic_stats
 from ...domain.grouping import group_releases
@@ -85,39 +85,26 @@ def run(args: argparse.Namespace) -> int:
             else:
                 output = render_stats_csv([], root)
         else:
-            output = "No audio files found."
-        if out_path is not None:
-            out_path.parent.mkdir(parents=True, exist_ok=True)
-            out_path.write_text(output, encoding="utf-8")
-            return 0
-        print(output)
+            if summary.scanned_audio_files > 0:
+                output = "Audio files found, but metadata could not be read."
+            else:
+                output = "No audio files found."
+        write_output_text(out_path, output)
         return 0
 
     groups = group_releases(releases, root)
     if args.json:
         output = render_stats_json(groups, summary, root, include_tracks=args.per_track)
-        if out_path is not None:
-            out_path.parent.mkdir(parents=True, exist_ok=True)
-            out_path.write_text(output, encoding="utf-8")
-            return 0
-        print(output)
+        write_output_text(out_path, output)
         return 0
     if args.csv:
         if args.per_track:
             output = render_stats_csv_tracks(releases, root)
         else:
             output = render_stats_csv(releases, root)
-        if out_path is not None:
-            out_path.parent.mkdir(parents=True, exist_ok=True)
-            out_path.write_text(output, encoding="utf-8")
-            return 0
-        print(output)
+        write_output_text(out_path, output)
         return 0
 
     output = render_stats_text(groups, summary, root, include_tracks=args.per_track)
-    if out_path is not None:
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_text(output, encoding="utf-8")
-        return 0
-    print(output)
+    write_output_text(out_path, output)
     return 0
