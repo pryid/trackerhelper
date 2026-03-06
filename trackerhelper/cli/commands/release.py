@@ -36,7 +36,7 @@ def add_parser(subparsers) -> argparse.ArgumentParser:
         nargs="?",
         const="missing_report.txt",
         default=None,
-        help="Write a report of releases missing cover.jpg or DR reports.",
+        help="Write a report of missing covers, skipped/failed cover uploads, and DR reports.",
     )
     return parser
 

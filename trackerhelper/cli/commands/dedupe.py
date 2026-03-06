@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import tempfile
 from pathlib import Path
 
 from ..args import add_no_progress_arg, normalize_exts
-from ..common import ensure_outside_roots, filter_existing_roots, write_output_lines, write_output_text
+from ..common import ensure_outside_roots, filter_existing_roots, is_within, write_output_lines, write_output_text
 from ..progress import run_with_progress
 from ...app.dedupe import apply_plan, default_jobs, load_plan, run_dedupe
 from ...domain.constants import AUDIO_EXTS_DEFAULT
@@ -21,6 +22,27 @@ def _protected_roots(roots: list[Path]) -> list[Path]:
             if parent not in protected:
                 protected.append(parent)
     return protected
+
+
+def _is_safe_aux_path(path: Path, protected_roots: list[Path]) -> bool:
+    return all(not is_within(path, root) for root in protected_roots)
+
+
+def _default_out_dir(roots: list[Path], protected_roots: list[Path]) -> Path:
+    cwd_candidate = (Path.cwd() / "_dedupe_reports").resolve()
+    if _is_safe_aux_path(cwd_candidate, protected_roots):
+        return cwd_candidate
+
+    if len(roots) > 1:
+        parents = {root.parent for root in roots}
+        if len(parents) == 1:
+            parent = parents.pop()
+            sibling_candidate = (parent.parent / f"{parent.name}_dedupe_reports").resolve()
+            if _is_safe_aux_path(sibling_candidate, protected_roots):
+                return sibling_candidate
+
+    root_label = roots[0].parent.name if len(roots) > 1 else roots[0].name
+    return (Path(tempfile.gettempdir()) / f"{root_label}_dedupe_reports").resolve()
 
 
 def add_parser(subparsers) -> argparse.ArgumentParser:
@@ -44,8 +66,8 @@ def add_parser(subparsers) -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--out-dir",
-        default="_dedupe_reports",
-        help="Where to write reports (default: ./_dedupe_reports).",
+        default=None,
+        help="Where to write reports (default: auto; uses ./_dedupe_reports when safe).",
     )
     parser.add_argument(
         "--jobs",
@@ -170,7 +192,11 @@ def run(args: argparse.Namespace) -> int:
         return 2
     protected_roots = _protected_roots(roots)
     exts = normalize_exts(args.ext, base_exts=set())
-    out_dir = Path(args.out_dir).expanduser().resolve()
+    out_dir = (
+        Path(args.out_dir).expanduser().resolve()
+        if args.out_dir is not None
+        else _default_out_dir(roots, protected_roots)
+    )
     move_to = Path(args.move_to).expanduser().resolve() if args.move_to else None
     plan_out = Path(args.plan_out).expanduser().resolve() if args.plan_out else None
     out_path = Path(args.output).expanduser().resolve() if args.output else None

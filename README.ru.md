@@ -140,6 +140,7 @@ trackerhelper stats "/path/to/DiscographyRoot"
 - длительность
 - количество треков (по файлам, у которых удалось прочитать duration)
 - bit depth и sample rate (если ffprobe вернул значения)
+- предупреждение, если часть треков пропущена из-за нечитабельной metadata
 
 В конце печатается суммарная строка `Total: ...`.
 
@@ -161,11 +162,22 @@ trackerhelper stats "/path/to/DiscographyRoot" --json
 trackerhelper stats "/path/to/DiscographyRoot" --csv
 ```
 
+В `--json` summary также входят:
+- `scanned_audio_files`
+- `unreadable_audio_files`
+
+Для каждого релиза в JSON есть:
+- `unreadable_track_count`
+
+В `--csv` для релизов есть колонка `unreadable_track_count`.
+
 ### Потрековый вывод
 ```bash
 trackerhelper stats "/path/to/DiscographyRoot" --json --per-track
 trackerhelper stats "/path/to/DiscographyRoot" --csv --per-track
 ```
+
+Потрековый вывод содержит только те треки, для которых удалось прочитать metadata.
 
 ### Запись вывода в файл
 ```bash
@@ -226,6 +238,12 @@ trackerhelper release "/path/to/DiscographyRoot" --report-missing "/tmp/missing_
 ```
 Файлы вывода должны быть вне папки с музыкой.
 
+В отчёте есть:
+- релизы без `cover.jpg`
+- релизы, где загрузка обложки завершилась ошибкой
+- признак того, что загрузка обложек была пропущена (`--no-cover` или загрузка недоступна)
+- релизы без подходящего DR-отчёта
+
 ### Подстановка DR-отчётов в BBCode
 Если у тебя уже есть `*_dr.txt` (например, собранные `dr.ps1`), укажи папку с логами:
 
@@ -238,6 +256,8 @@ trackerhelper release "/path/to/DiscographyRoot" --dr-dir "C:\Users\<you>\Music\
 ### Автоподстановка обложек через FastPic (опционально)
 Если в папке релиза лежит `cover.jpg` (регистр неважен), то в команде `release` утилита загрузит обложку на FastPic и подставит прямую ссылку в BBCode. Если обложка не найдена или загрузка не удалась — остаётся `COVER_URL`.
 
+Если загрузка отключена через `--no-cover` или недоступна, в BBCode остаётся `COVER_URL`, а missing-report помечает, что загрузка обложек была пропущена.
+
 ## 3) Режим проверки форматирования без ffprobe/ФС (`--synthetic`)
 ```bash
 trackerhelper stats "/any/path" --synthetic
@@ -247,6 +267,11 @@ trackerhelper release "/any/path" --synthetic
 ## 4) Поиск дублей релизов по аудио-отпечаткам (`trackerhelper dedupe`)
 ```bash
 trackerhelper dedupe --roots Albums Singles
+```
+
+Можно передавать и абсолютные пути:
+```bash
+trackerhelper dedupe --roots "/music/Artist/Albums" "/music/Artist/Singles"
 ```
 
 Опции:
@@ -261,7 +286,11 @@ trackerhelper dedupe --roots Albums Singles
 - `--dry-run` — не удалять/не перемещать релизы
 
 Примечание: `--apply-plan` требует `--move-to` или `--delete`.
-Файлы вывода и отчёты должны быть вне сканируемых корней.
+Файлы вывода и отчёты должны быть вне защищённой области сканирования. Для соседних roots вроде `Albums` и `Singles` в неё входит и их общий родительский каталог.
+
+Если какой-то root не существует, он будет пропущен с warning. Если валидных roots не осталось, команда завершится с ошибкой.
+
+Если `--out-dir` не задан, `dedupe` сам выбирает безопасную директорию для отчётов. Путь `./_dedupe_reports` используется только когда он находится вне защищённой области.
 
 `--synthetic` использует данные из `trackerhelper/app/synthetic_dataset.py` и позволяет быстро проверить, как выглядит консольный вывод и BBCode, не имея реальных файлов.
 
@@ -291,3 +320,6 @@ trackerhelper dedupe --roots Albums Singles
 Это нормально:
 - некоторые форматы/файлы не содержат нужных полей, или ffprobe их не возвращает;
 - внутри релиза могут быть разные параметры → `mixed`.
+
+### `trackerhelper`: `Audio files found, but metadata could not be read.`
+Это значит, что аудиофайлы найдены, но `ffprobe` не смог извлечь duration ни у одного из них. В таком случае стоит проверить сами файлы и убедиться, что `ffprobe` читает их напрямую.

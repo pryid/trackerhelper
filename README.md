@@ -143,6 +143,7 @@ Output per release includes:
 - duration
 - track count (only files where duration was read)
 - bit depth and sample rate (if ffprobe returns values)
+- a warning line if some tracks were skipped because metadata could not be read
 
 The end prints `Total: ...`.
 
@@ -163,11 +164,22 @@ trackerhelper stats "/path/to/DiscographyRoot" --json
 trackerhelper stats "/path/to/DiscographyRoot" --csv
 ```
 
+`--json` summary also includes:
+- `scanned_audio_files`
+- `unreadable_audio_files`
+
+Per-release JSON includes:
+- `unreadable_track_count`
+
+`--csv` release rows include an `unreadable_track_count` column.
+
 ### Per-track stats
 ```bash
 trackerhelper stats "/path/to/DiscographyRoot" --json --per-track
 trackerhelper stats "/path/to/DiscographyRoot" --csv --per-track
 ```
+
+Per-track output contains only tracks where metadata was read successfully.
 
 ### Write stats to a file
 ```bash
@@ -223,6 +235,12 @@ trackerhelper release "/path/to/DiscographyRoot" --report-missing "/tmp/missing_
 ```
 Output files must be outside the music root.
 
+The report includes:
+- releases missing `cover.jpg`
+- releases where cover upload failed
+- whether cover uploads were skipped (`--no-cover` or cover upload unavailable)
+- releases without matching DR logs
+
 The template keeps placeholders like `ROOT_COVER_URL`, `GENRE`, `Service`, `YEAR`.
 Russian output uses `ЛЕЙБЛ` for the label placeholder, English output uses `LABEL`.
 
@@ -237,6 +255,8 @@ The tool tries to match DR logs by folder name (several name patterns plus white
 ### FastPic cover upload (optional)
 If the release folder contains `cover.jpg` (case-insensitive), `release` uploads the cover to FastPic and inserts the direct link. If not found or upload fails, it keeps `COVER_URL`.
 
+If cover uploads are disabled with `--no-cover`, or cover upload support is unavailable, BBCode keeps `COVER_URL` and the missing-assets report marks cover uploads as skipped.
+
 ## 3) Formatting-only mode (`--synthetic`)
 ```bash
 trackerhelper stats "/any/path" --synthetic
@@ -246,6 +266,11 @@ trackerhelper release "/any/path" --synthetic
 ## 4) Detect duplicate releases by audio fingerprints (`trackerhelper dedupe`)
 ```bash
 trackerhelper dedupe --roots Albums Singles
+```
+
+You can also pass absolute paths:
+```bash
+trackerhelper dedupe --roots "/music/Artist/Albums" "/music/Artist/Singles"
 ```
 
 Options:
@@ -259,9 +284,13 @@ Options:
 - `--apply-plan PATH` apply a previously generated plan
 - `--dry-run` do not move/delete releases
 
-Output files and reports must be outside the scanned roots.
+Reports and output files must be outside the protected scan area. With sibling roots such as `Albums` and `Singles`, this also includes their common parent directory.
 
 Note: `--apply-plan` requires either `--move-to` or `--delete`.
+
+If a root path does not exist, it is skipped with a warning. If no valid roots remain, the command exits with an error.
+
+If `--out-dir` is not set, `dedupe` picks a safe reports directory automatically. It uses `./_dedupe_reports` when that path is outside the protected scan area.
 
 `--synthetic` uses synthetic data from `trackerhelper/app/synthetic_dataset.py` and lets you check formatting without real files or ffprobe.
 
@@ -291,3 +320,6 @@ Install ffmpeg and add it to `PATH` so `ffprobe` is available.
 This is normal:
 - some formats do not provide these fields or ffprobe does not return them;
 - a release may contain mixed parameters so it shows `mixed`.
+
+### `trackerhelper`: `Audio files found, but metadata could not be read.`
+This means audio files were found, but `ffprobe` could not extract duration metadata from any of them. Check the files themselves and verify that `ffprobe` can read them directly.

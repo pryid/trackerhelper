@@ -6,12 +6,13 @@
 - `trackerhelper/app/` orchestrates use-cases and side effects (scan, ffprobe, uploads).
 - `trackerhelper/domain/` holds pure dataclasses and business logic (`models`, `normalize`, `tags`, `grouping`, `dedupe`).
 - `trackerhelper/infra/` contains filesystem + external tool adapters (`scan`, `ffprobe`, `cover`, `dr`, `fingerprint`).
-- `trackerhelper/formatting/` owns output formatting (`bbcode`, `bbcode_templates`, `tracklist`, `stats`, `dedupe`).
+- `trackerhelper/formatting/` owns output formatting (`bbcode`, `bbcode_templates`, `tracklist`, `stats`, `dedupe`, `release`, `csv_utils`).
 
 ## External tools
 - `ffprobe` is required for `stats`, `release`, and `normalize` (tags, durations).
 - `fpcalc` (Chromaprint) is required for `dedupe`.
-- `requests` is optional and only used for FastPic cover uploads.
+- `requests` is installed with the package and used for FastPic cover uploads.
+- `rich` is installed with the package and used for TTY progress output.
 
 ## Layout
 - `trackerhelper/cli/` owns CLI parsing and orchestration.

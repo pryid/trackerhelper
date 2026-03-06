@@ -21,4 +21,4 @@ Thanks for contributing!
 ## Style notes
 - Prefer small helpers with clear names over inline lambdas.
 - Keep file operations OS-agnostic (Path over hard-coded separators).
-- Update `README.md` when behavior or flags change.
+- When CLI behavior changes, update both `README.md` and `README.ru.md`.
