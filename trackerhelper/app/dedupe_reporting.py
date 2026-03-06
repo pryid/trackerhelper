@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ..domain.dedupe import DedupeResult
+from .progress import ProgressCallback
 
 
 @dataclass(frozen=True)
@@ -102,7 +103,7 @@ def write_reports(result: DedupeResult, out_dir: Path) -> DedupeReportPaths:
 
 def print_summary(result: DedupeResult, paths: DedupeReportPaths, out_dir: Path) -> None:
     """Print a short summary of dedupe results."""
-    print(f"Done. Reports in: {out_dir}")
+    print(f"Wrote reports to: {out_dir}")
     print(f"  - {paths.report_path}")
     print(f"  - {paths.list_path}")
     print(f"  - {paths.post_path}")
@@ -113,27 +114,49 @@ def print_summary(result: DedupeResult, paths: DedupeReportPaths, out_dir: Path)
         print("Post-check: OK (no remaining A subset of B relationships).")
 
 
-def apply_actions(result: DedupeResult, *, move_to: str | None, delete: bool, quiet: bool) -> tuple[int, int]:
+def apply_actions(
+    result: DedupeResult,
+    *,
+    move_to: str | None,
+    delete: bool,
+    quiet: bool,
+    progress: ProgressCallback | None = None,
+) -> tuple[int, int]:
     """Move/delete redundant releases based on flags."""
     moved = 0
     deleted = 0
+    total_actions = len(result.redundant)
     if move_to:
         dst = Path(move_to)
         ensure_dir(dst)
-        for r in sorted(result.redundant, key=lambda r: r.as_posix()):
+        if progress is not None:
+            progress.set_description("Moving releases")
+            progress.start(total_actions)
+        for index, r in enumerate(sorted(result.redundant, key=lambda r: r.as_posix()), start=1):
             src = r
+            if progress is not None:
+                progress.set_description(f"Moving releases ({index}/{total_actions}): {src.name}")
             if src.exists():
                 safe_move(src, dst)
                 moved += 1
+            if progress is not None:
+                progress.advance()
         if not quiet:
-            print(f"Moved releases: {moved} -> {dst}")
+            print(f"Moved releases: {moved} to {dst}")
 
     if delete:
-        for r in sorted(result.redundant, key=lambda r: r.as_posix()):
+        if progress is not None:
+            progress.set_description("Deleting releases")
+            progress.start(total_actions)
+        for index, r in enumerate(sorted(result.redundant, key=lambda r: r.as_posix()), start=1):
             src = r
+            if progress is not None:
+                progress.set_description(f"Deleting releases ({index}/{total_actions}): {src.name}")
             if src.exists():
                 shutil.rmtree(src)
                 deleted += 1
+            if progress is not None:
+                progress.advance()
         if not quiet:
             print(f"Deleted releases: {deleted}")
 

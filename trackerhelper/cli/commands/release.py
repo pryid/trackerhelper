@@ -95,7 +95,7 @@ def run(args: argparse.Namespace) -> int:
         return 2
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(result.bbcode, encoding="utf-8")
-    print(f"\nWrote release template: {out_path}")
+    print(f"Wrote release template: {out_path}")
 
     if args.report_missing is not None:
         report_path = Path(args.report_missing).expanduser().resolve()

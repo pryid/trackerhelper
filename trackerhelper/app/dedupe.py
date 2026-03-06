@@ -44,6 +44,7 @@ def apply_plan(
     move_to: Path | None,
     delete: bool,
     quiet: bool,
+    progress: ProgressCallback | None = None,
 ) -> tuple[int, int, int]:
     code, err = validate_actions(delete=delete, move_to=move_to, require_action=True)
     if err:
@@ -65,6 +66,7 @@ def apply_plan(
         move_to=str(move_to) if move_to is not None else None,
         delete=delete,
         quiet=quiet,
+        progress=progress,
     )
     return 0, moved, deleted_count
 
@@ -82,7 +84,7 @@ def run_dedupe(
     plan_out: Path | None = None,
 ) -> tuple[int, DedupeResult | None, DedupeReportPaths | None]:
     if not _require_executable("fpcalc"):
-        print("ERROR: 'fpcalc' not found in PATH. Install chromaprint (fpcalc).", flush=True)
+        print("Error: 'fpcalc' not found in PATH. Install chromaprint (fpcalc).", flush=True)
         return 2, None, None
 
     code, err = validate_actions(delete=delete, move_to=move_to, require_action=False)
@@ -94,7 +96,7 @@ def run_dedupe(
 
     audio_files = list(iter_audio_files(roots, exts))
     if not audio_files:
-        print("No audio files found in the specified roots.", flush=True)
+        print("No audio files found.", flush=True)
         return 1, None, None
 
     if not quiet:
@@ -121,7 +123,7 @@ def run_dedupe(
         progress.finish()
 
     if fingerprint_count == 0:
-        print("fpcalc failed to process any files (check codecs/files).", flush=True)
+        print("Error: fpcalc failed to process any files (check codecs/files).", flush=True)
         return 1, None, None
 
     result = find_redundant_releases(release_keys)
@@ -138,6 +140,7 @@ def run_dedupe(
         move_to=str(move_to) if move_to is not None else None,
         delete=delete,
         quiet=quiet,
+        progress=progress,
     )
 
     return 0, result, paths

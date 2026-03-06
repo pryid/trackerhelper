@@ -111,7 +111,7 @@ def run(args: argparse.Namespace) -> int:
     """Execute the dedupe command."""
     format_flags = [args.json, args.csv, args.jsonl]
     if sum(1 for flag in format_flags if flag) > 1:
-        print("Error: --json, --csv, and --jsonl cannot be used together.")
+        print("Error: --json, --csv, and --jsonl are mutually exclusive.")
         return 2
     if args.output and not any(format_flags):
         print("Error: --output requires --json, --csv, or --jsonl.")
@@ -141,11 +141,17 @@ def run(args: argparse.Namespace) -> int:
             if not ensure_outside_roots(out_path, protected_plan_roots, "output file"):
                 return 2
         quiet = args.quiet or args.json or args.csv or out_path is not None
-        code, moved, deleted = apply_plan(
-            plan_path,
-            move_to=move_to,
-            delete=args.delete,
-            quiet=quiet,
+        code, moved, deleted = run_with_progress(
+            args.no_progress,
+            quiet,
+            "Applying dedupe plan",
+            lambda progress: apply_plan(
+                plan_path,
+                move_to=move_to,
+                delete=args.delete,
+                quiet=quiet,
+                progress=progress,
+            ),
         )
         if code != 0:
             return code

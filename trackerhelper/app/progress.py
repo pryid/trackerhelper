@@ -8,6 +8,8 @@ class ProgressCallback(Protocol):
 
     def advance(self, step: int = 1) -> None: ...
 
+    def set_description(self, description: str) -> None: ...
+
     def finish(self) -> None: ...
 
 
@@ -16,6 +18,9 @@ class NullProgress:
         return None
 
     def advance(self, step: int = 1) -> None:
+        return None
+
+    def set_description(self, description: str) -> None:
         return None
 
     def finish(self) -> None:

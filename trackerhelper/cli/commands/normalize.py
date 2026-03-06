@@ -43,7 +43,7 @@ def run(args: argparse.Namespace) -> int:
     )
 
     if not plan.actions and not plan.skipped:
-        print("No audio files found for normalization.")
+        print("No audio files found.")
         return 0
 
     if plan.skipped:
@@ -60,7 +60,12 @@ def run(args: argparse.Namespace) -> int:
             print(f"  {_display_path(root, action.source)} -> {_display_path(root, action.target)}")
         return len(plan.actions)
 
-    count = apply_normalization(plan)
+    count = run_with_progress(
+        args.no_progress,
+        False,
+        "Renaming releases",
+        lambda progress: apply_normalization(plan, progress=progress),
+    )
     for action in plan.actions:
         print(f"Renamed: {_display_path(root, action.source)} -> {_display_path(root, action.target)}")
     return count

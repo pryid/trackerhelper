@@ -41,6 +41,10 @@ def _normalize_lang(lang: str | None) -> str:
     return "en" if lang_norm == "en" else "ru"
 
 
+def _progress_label(stage: str, index: int, total: int, release_name: str) -> str:
+    return f"{stage} ({index}/{total}): {release_name}"
+
+
 def build_release_bbcode(
     root: Path,
     exts: set[str],
@@ -83,7 +87,14 @@ def build_release_bbcode(
     items: list[ReleaseBBCodeItem] = []
     missing_covers: list[Path] = []
     missing_drs: list[Path] = []
-    for rel in releases:
+    total_releases = len(releases)
+    if progress is not None:
+        progress.set_description("Preparing releases")
+        progress.start(total_releases)
+
+    for index, rel in enumerate(releases, start=1):
+        if progress is not None:
+            progress.set_description(_progress_label("Preparing releases", index, total_releases, rel.path.name))
         rel_path = rel.path.relative_to(root)
         group = group_key(rel_path)
 
@@ -105,6 +116,8 @@ def build_release_bbcode(
             missing_covers.append(rel.path)
         elif cover_uploader is not None:
             try:
+                if progress is not None:
+                    progress.set_description(_progress_label("Uploading covers", index, total_releases, rel.path.name))
                 cover_url = cover_uploader.upload(cover_path)
             except Exception as exc:
                 logger.warning("Warning: cover upload failed for %s: %s", cover_path, exc)
@@ -122,8 +135,9 @@ def build_release_bbcode(
                 ),
             )
         )
+        if progress is not None:
+            progress.advance()
 
-    total_releases = len(releases)
     lang = _normalize_lang(lang)
     groups = group_bbcode_releases(items)
 

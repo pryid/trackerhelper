@@ -138,8 +138,22 @@ def plan_normalization(
     return NormalizationPlan(actions=actions, skipped=skipped)
 
 
-def apply_normalization(plan: NormalizationPlan) -> int:
+def apply_normalization(
+    plan: NormalizationPlan,
+    progress: ProgressCallback | None = None,
+) -> int:
     """Apply rename actions from a normalization plan."""
-    for action in plan.actions:
+    total_actions = len(plan.actions)
+    if progress is not None:
+        progress.set_description("Renaming releases")
+        progress.start(total_actions)
+
+    for index, action in enumerate(plan.actions, start=1):
+        if progress is not None:
+            progress.set_description(
+                f"Renaming releases ({index}/{total_actions}): {action.source.name} -> {action.target.name}"
+            )
         action.source.rename(action.target)
+        if progress is not None:
+            progress.advance()
     return len(plan.actions)

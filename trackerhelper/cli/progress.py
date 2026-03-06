@@ -17,10 +17,14 @@ class _RichProgress(ProgressCallback):
 
     def start(self, total: int) -> None:
         self._total = total
-        self._progress.update(self._task_id, total=total)
+        self._finished = False
+        self._progress.update(self._task_id, total=total, completed=0)
 
     def advance(self, step: int = 1) -> None:
         self._progress.advance(self._task_id, step)
+
+    def set_description(self, description: str) -> None:
+        self._progress.update(self._task_id, description=description)
 
     def finish(self) -> None:
         if self._finished:
