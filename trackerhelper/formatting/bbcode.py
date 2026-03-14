@@ -62,12 +62,15 @@ def make_release_bbcode(
     groups = sorted(grouped_releases, key=lambda g: group_sort_index(g.name))
     for group in groups:
         group_title = group_titles.get(group.name, group.name)
-        parts.append(group_open(group_title))
+        has_group_title = bool(group_title)
+        if has_group_title:
+            parts.append(group_open(group_title))
 
         for rel in group.releases:
             parts.append(release_item(rel, labels))
 
-        parts.append(group_close())
+        if has_group_title:
+            parts.append(group_close())
 
     parts.append(about_section(labels))
 

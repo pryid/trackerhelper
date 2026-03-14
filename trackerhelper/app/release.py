@@ -102,7 +102,7 @@ def build_release_bbcode(
         if progress is not None:
             progress.set_description(_progress_label("Preparing releases", index, total_releases, rel.path.name))
         rel_path = rel.path.relative_to(root)
-        group = group_key(rel_path)
+        group = group_key(rel_path) if len(rel_path.parts) > 1 else ""
 
         folder_name = rel.path.name
         title, year = parse_release_title_and_year(folder_name)
